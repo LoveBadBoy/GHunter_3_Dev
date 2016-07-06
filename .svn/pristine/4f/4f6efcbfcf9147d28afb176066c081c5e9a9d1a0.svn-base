@@ -1,0 +1,153 @@
+//
+//  ghunterSkillshowViewController.h
+//  ghunter
+//
+//  Created by 汪睦雄 on 15/8/6.
+//  Copyright (c) 2015年 ghunter. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "PullTableView.h"
+#import "UIImageView+WebCache.h"
+#import "ghunterRequester.h"
+#import "UMSocial.h"
+#import "SIAlertView.h"
+#import <AddressBook/AddressBook.h>
+#import <AddressBookUI/AddressBookUI.h>
+#import "OHAttributedLabel.h"
+#import "TQStarRatingView.h"
+#import "ghunterUserCenterViewController.h"
+#import "ghunterReleaseSkillViewController.h"
+#import "SIAlertView.h"
+#import "ImgScrollView.h"
+#import "ghunterChatViewController.h"
+#import "Monitor.h"
+#import "SOLoopView.h"
+#import "MJPhotoBrowser.h"
+#import "MJPhoto.h"
+#import "ghunterLoginViewController.h"
+
+typedef void(^callBack)();
+
+@interface ghunterSkillViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,PullTableViewDelegate,UIActionSheetDelegate,UITextViewDelegate, UITextFieldDelegate,ABNewPersonViewControllerDelegate,UIGestureRecognizerDelegate,ImgScrollViewDelegate,UIScrollViewDelegate,SOLoopViewDelegate,ZYQAssetPickerControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate, OHAttributedLabelDelegate, HPGrowingTextViewDelegate, UIImagePickerControllerDelegate>{
+    
+    PullTableView *taskTable;
+    NSUInteger page;
+    // UIView *textbg;
+    UIView *textbg;
+    NSMutableArray* skillcommentArray;
+    NSMutableDictionary* skill;
+    UIView *tasktailView;
+    BOOL collected;
+    BOOL requested;
+    BOOL isShow;
+    
+    // UITextView *dangtext;
+    UITextView *dangtext;
+    UIView *_text_view;
+    NSString* showStr;
+    SIAlertView *moreAlertView;
+    SIAlertView *reportAlertView;
+    SIAlertView *shareAlertView;
+    SIAlertView *tipAlertView;
+    ghunterLoadingView *loadingView;
+    int height;
+    UIScrollView *myScrollView;
+    NSInteger currentIndex;
+    UIView *markView;
+    UIView *scrollPanel;
+    ImgScrollView *lastImgScrollView;
+    NSInteger once;
+    UIView *headview;
+    NSMutableArray *imgarr;
+    UIButton* Coment;
+    UIButton*  Evaluation;
+    UILabel* redlin1;
+    UILabel* redlin2;
+    NSMutableArray *btnarray;
+    NSMutableDictionary *skdic;
+    NSDictionary *namedic;
+    UIImage *Piimage;
+    NSInteger to_comment;
+    IBOutlet UILabel *textViewTip;
+    IBOutlet UIView *toolBar;
+    UIView *view1;
+    UIView *view2;
+    NSMutableArray *imgArray;
+    UILabel *labelxx;
+//    BOOL seled;
+    NSMutableArray *dataimgarr;
+    NSMutableArray *cmtAddedImgArr;
+    UIScrollView *scrollView;
+    NSMutableArray *arraynumber;
+    NSMutableArray *addarray;
+
+    UIButton * biaoqingBtn;
+    UIButton * addBtn2;
+    UIButton * downBtn3;
+    UILabel * nameLb;
+    
+    UIView * taskBG;
+    
+    BOOL flagClick;
+    NSArray *picArray;
+    UIView *ServiceMode;
+    UIView *ServiceTime;
+    UIView *ServiceLocation;
+    
+    OHAttributedLabel *description;
+    
+    IBOutlet UIView *chatToolBar;
+    // 已添加的图片显示的区域
+    IBOutlet UIView *addedImageLayout;
+    
+    NSInteger commentCount;
+    
+}
+@property(strong,nonatomic) UIImageView*img0;
+@property(strong,nonatomic) UIImageView*img1;
+@property(strong,nonatomic) UIImageView*img2;
+@property(strong,nonatomic) UIImageView*img3;
+@property (nonatomic,strong)UIWindow *window;
+// @property (nonatomic,strong)UIView *pickview;
+ @property (nonatomic,strong)UIView *bastview;
+@property (nonatomic,strong)UIView *whitview;
+@property (assign,nonatomic) NSInteger currentPage; //页码
+@property (assign,nonatomic) NSInteger valuePage; //评价的页码
+
+@property (strong, nonatomic) SOLoopView *loopView;
+@property (retain, nonatomic) NSString *fromPush;
+@property (retain, nonatomic) NSString *isShowed;
+@property(retain,nonatomic)NSString* skillid;
+
+@property(retain,nonatomic)NSString *reply_uid;
+@property(retain,nonatomic)NSString *reply_cid;
+
+@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
+
+@property (strong, nonatomic) IBOutlet UIView *buyView;
+@property (strong, nonatomic) IBOutlet UIView *resiveView;
+
+@property (strong, nonatomic) IBOutlet UIView *smallResiveView;
+@property (strong, nonatomic) IBOutlet UIView *smallDownView;
+@property (strong, nonatomic) IBOutlet UIView *smallBuyView;
+
+
+@property (strong, nonatomic) IBOutlet UIImageView *buyAva;
+@property (strong, nonatomic) IBOutlet UIImageView *risiveAva;
+@property (strong, nonatomic) IBOutlet UIImageView *downAva;
+
+@property (copy, nonatomic)callBack callBackBlock;
+
+
+@property (retain, nonatomic) NSString *tid;
+
+@property (strong, nonatomic) IBOutlet UIImageView *chatImg;
+
+// chatTool
+@property (strong, nonatomic) IBOutlet UIButton *faceBtn;
+@property (strong, nonatomic) IBOutlet UIButton *addBtn;
+@property (strong, nonatomic) IBOutlet UIButton *downBtn;
+
+
+@end

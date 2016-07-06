@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghuntertaskView/ghuntertaskViewController.m"
+            timestampString = "475469704.667197"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "2877"
+            endingLineNumber = "2877"
+            landmarkName = "-bid:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghunterMyView/ghunterMyViewController.m"
+            timestampString = "475383582.870341"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "483"
+            endingLineNumber = "483"
+            landmarkName = "-click2Login"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghuntertaskView/ghuntertaskViewController.m"
+            timestampString = "475469704.667197"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "5043"
+            endingLineNumber = "5043"
+            landmarkName = "-didRewardHunterIsLoading:withTsid:andWithType:andWithData:andWithFlag:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghuntertaskView/ghuntertaskViewController.m"
+            timestampString = "475469704.667197"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "5034"
+            endingLineNumber = "5034"
+            landmarkName = "-didRewardHunterIsLoading:withTsid:andWithType:andWithData:andWithFlag:"
+            landmarkType = "5">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "-[ghuntertaskViewController didRewardHunterIsLoading:withTsid:andWithType:andWithData:andWithFlag:]"
+                  moduleName = "ghunter"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/imgondar/Desktop/GHunter_3_Dev/ghunter/Sections/ghuntertaskView/ghuntertaskViewController.m"
+                  timestampString = "475469705.778385"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "5035"
+                  endingLineNumber = "5035"
+                  offsetFromSymbolStart = "796">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "__99-[ghuntertaskViewController didRewardHunterIsLoading:withTsid:andWithType:andWithData:andWithFlag:]_block_invoke"
+                  moduleName = "ghunter"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/imgondar/Desktop/GHunter_3_Dev/ghunter/Sections/ghuntertaskView/ghuntertaskViewController.m"
+                  timestampString = "475469705.778634"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "5035"
+                  endingLineNumber = "5035"
+                  offsetFromSymbolStart = "40">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghuntertaskView/ghuntertaskViewController.m"
+            timestampString = "475469704.667197"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "4825"
+            endingLineNumber = "4825"
+            landmarkName = "-okAlert:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghunterDiscoverView/ghunterDiscoverViewController.m"
+            timestampString = "475411265.092443"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "282"
+            endingLineNumber = "282"
+            landmarkName = "-findSkillTaped:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghuntertaskView/ghuntertaskViewController.m"
+            timestampString = "475469704.667197"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "4510"
+            endingLineNumber = "4510"
+            landmarkName = "-reward:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghunterFindTask/ghunterFindTaskViewController.m"
+            timestampString = "475417677.982777"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "195"
+            endingLineNumber = "195"
+            landmarkName = "-didGetTaskListIsloading:withPage:andType:andCatalogID:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghuntertaskView/ghuntertaskViewController.m"
+            timestampString = "475469704.667197"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "4735"
+            endingLineNumber = "4735"
+            landmarkName = "-coinFeeBtnClick:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "ghunter/Sections/ghunterFindTask/ghunterFindTaskViewController.m"
+            timestampString = "475469638.143895"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "132"
+            endingLineNumber = "132"
+            landmarkName = "-createTopScrollView:andWithCatalogs:"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

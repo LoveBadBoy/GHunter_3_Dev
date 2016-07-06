@@ -1,0 +1,331 @@
+//
+//  ghunterShareCountViewController.m
+//  ghunter
+//
+//  Created by ImGondar on 15/12/25.
+//  Copyright © 2015年 ghunter. All rights reserved.
+//
+
+#import "ghunterShareCountViewController.h"
+
+@interface ghunterShareCountViewController ()
+{
+    NSMutableArray * shareCountArray;
+    PullTableView * shareTableView;
+    NSInteger sharePage;
+}
+
+- (IBAction)back:(id)sender;
+
+
+@end
+
+@implementation ghunterShareCountViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    
+    
+    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
+        self.edgesForExtendedLayout = UIRectEdgeNone;
+    }
+    sharePage = 1;
+    shareCountArray = [[NSMutableArray alloc] init];
+    
+    shareTableView = [[PullTableView alloc] initWithFrame:CGRectMake(0, 64, mainScreenWidth, mainScreenheight - TAB_BAR_HEIGHT - 26) style:UITableViewStylePlain];
+//    shareTableView.contentSize = CGSizeMake(0, shareTableView.frame.size.height);
+    shareTableView.showsHorizontalScrollIndicator = NO;
+    shareTableView.showsVerticalScrollIndicator = NO;
+    shareTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    shareTableView.pullDelegate = self;
+    shareTableView.delegate = self;
+    shareTableView.dataSource = self;
+    shareTableView.backgroundColor = RGBA(235, 235, 235, 1);
+    
+    [self.view addSubview:shareTableView];
+    
+    
+    // 分享数据
+    [self didGetShareCountListIsloading:YES withPage:sharePage andOid:self.oidStr];
+}
+
+
+- (void)viewWillAppear:(BOOL)animated {
+    
+    [super viewWillAppear:animated];
+    
+    self.tabBarController.tabBar.hidden = YES;
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.navigationBar.alpha = 0;
+    [self.navigationController.view sendSubviewToBack:self.navigationController.navigationBar];
+    
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+#pragma mark --- 获取分享统计列表 ---
+-(void)didGetShareCountListIsloading:(BOOL )isloading withPage:(NSInteger)p andOid:(NSString *) oidStr {
+    if (isloading) {
+        [self startLoad];
+    }
+    
+    NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
+    [parameters setObject:[NSString stringWithFormat:@"%ld", (long)p] forKey:@"page"];
+    [parameters setObject:[NSString stringWithFormat:@"%@", self.oidStr] forKey:@"oid"];
+    
+    [AFNetworkTool httpRequestWithUrl:URL_SHARE_COUNT params:parameters success:^(NSData *data) {
+        if (isloading) {
+            [self endLoad];
+        }
+        NSError *error;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        if ([[result objectForKey:@"error"]integerValue] == 0) {
+            if (p == 1) {
+                [shareCountArray removeAllObjects];
+                
+                sharePage = 2;
+                NSArray *array = [result valueForKey:@"shares"];
+                
+                [shareCountArray addObjectsFromArray:array];
+                [shareTableView reloadData];
+                if([shareCountArray count]>0)
+                {
+                    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+                    [shareTableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:NO];
+                }
+                shareTableView.pullTableIsRefreshing = NO;
+            }else{
+                sharePage++;
+                NSArray *array = [result valueForKey:@"shares"];
+                [shareCountArray addObjectsFromArray:array];
+                [shareTableView reloadData];
+                shareTableView.pullTableIsLoadingMore = NO;
+            }
+        }else{
+            [ProgressHUD show:[result objectForKey:@"msg"]];
+            shareTableView.pullTableIsRefreshing = NO;
+            shareTableView.pullTableIsLoadingMore = NO;
+        }
+    } fail:^{
+        [ProgressHUD show:HTTPREQUEST_ERROR];
+        shareTableView.pullTableIsRefreshing = NO;
+        shareTableView.pullTableIsLoadingMore = NO;
+    }];
+}
+
+
+
+#pragma mark --- UITableViewDelegate
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+   
+//    ghunterUserCenterViewController * ghunterUser = [[ghunterUserCenterViewController alloc] init];
+//    NSDictionary * share = [shareCountArray objectAtIndex:indexPath.row - 1];
+//    ghunterUser.uid = [share objectForKey:@"uid"];
+//    [self.navigationController pushViewController:ghunterUser animated:YES];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    UITableViewCell * cell = [self tableView:tableView cellForRowAtIndexPath:indexPath];
+    return cell.frame.size.height;
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+        [cell setSeparatorInset:UIEdgeInsetsZero];
+    }
+    if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+        [cell setLayoutMargins:UIEdgeInsetsZero];
+    }
+}
+
+#pragma mark --- UITableViewDataSource
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    return [shareCountArray count] + 1;
+}
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    static NSString *CellIdentifier = @"CellIdentifier123";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (!cell) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+    }
+    else {
+        while ([cell.contentView.subviews lastObject]) {
+            [[cell.contentView.subviews lastObject] removeFromSuperview];
+        }
+    }
+    
+    if(indexPath.row == 0){
+        NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"descriptionView" owner:self options:nil];
+        cell = [nibs objectAtIndex:0];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.backgroundColor = [UIColor clearColor];
+        CGRect cellFrame = cell.frame;
+        cellFrame.size.height = 0;
+        cell.frame = cellFrame;
+    } else {
+        NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"shareCount" owner:self options:nil];
+        cell = [nibs objectAtIndex:0];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        
+        NSDictionary * dict = [shareCountArray objectAtIndex:indexPath.row - 1];
+        UIImageView * iconImg = (UIImageView *)[cell viewWithTag:1];
+
+        UIView * view = (UIView *)[cell viewWithTag:99];
+        
+        UIImageView * plantFormImg = (UIImageView *)[cell viewWithTag:9];
+        UILabel * goldNumLabel = (UILabel *)[cell viewWithTag:10];
+        UIImageView * countImg = (UIImageView *)[cell viewWithTag:11];
+        UILabel * shareNumLabel = (UILabel *)[cell viewWithTag:12];
+        
+        // 头像
+        iconImg.layer.masksToBounds =YES;
+        iconImg.layer.cornerRadius = iconImg.frame.size.width / 2;
+        [iconImg sd_setImageWithURL:[dict objectForKey:@"tiny_avatar"] placeholderImage:[UIImage imageNamed:@"avatar"]];
+        
+        
+        UILabel * nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(58, 10, 100, 21)];
+        // 名字
+        nameLabel.text = [dict objectForKey:@"username"];
+        nameLabel.textColor = [UIColor blackColor];
+        nameLabel.font = [UIFont systemFontOfSize:12];
+        nameLabel.textAlignment = NSTextAlignmentLeft;
+        
+        CGSize nameSize = [[dict objectForKey:@"username"] sizeWithFont:nameLabel.font];
+        CGRect nameFrame = nameLabel.frame;
+        
+        if (nameSize.width > 120) {
+            
+            nameFrame.size.width = 120;
+        }else {
+            nameFrame.size.width = nameSize.width;
+        }
+        nameLabel.frame = nameFrame;
+        [cell addSubview:nameLabel];
+        
+        UIImageView * genderImg = [[UIImageView alloc] initWithFrame:CGRectMake(58, 16, 8, 8)];
+        [cell addSubview:genderImg];
+        // 性别
+        if ([[dict objectForKey:@"sex"] isEqualToString:@"1"]) {
+            genderImg.image = [UIImage imageNamed:@"male"];
+        }else {
+            genderImg.image = [UIImage imageNamed:@"female"];
+        }
+        CGRect genderFrame = genderImg.frame;
+        genderFrame.origin.x = nameLabel.frame.origin.x + nameSize.width + 5;
+        genderImg.frame = genderFrame;
+        
+        // 金币数
+        plantFormImg.image = [UIImage imageNamed:@"赏金"];
+        goldNumLabel.text = [NSString stringWithFormat:@"%@", [dict objectForKey:@"reward"]];
+        goldNumLabel.font = [UIFont systemFontOfSize:10];
+        goldNumLabel.textAlignment = NSTextAlignmentLeft;
+        
+        CGSize goldSize = [goldNumLabel.text sizeWithFont:goldNumLabel.font];
+        CGRect goldFrame = goldNumLabel.frame;
+        goldFrame.origin.x = mainScreenWidth - 10 - goldSize.width;
+        goldNumLabel.frame = goldFrame;
+        
+        // 次数
+        countImg.image = [UIImage imageNamed:@"浏览"];
+        shareNumLabel.text = [NSString stringWithFormat:@"%@", [dict objectForKey:@"browsenum"]];
+        shareNumLabel.textAlignment = NSTextAlignmentLeft;
+        
+        CGSize shareSize = [shareNumLabel.text sizeWithFont:shareNumLabel.font];
+        CGRect shareFrame = shareNumLabel.frame;
+        shareFrame.origin.x = mainScreenWidth - 10 - shareSize.width;
+        shareNumLabel.frame = shareFrame;
+        
+        NSInteger qqZone = [[dict objectForKey:@"qzone"] integerValue];
+        NSInteger qqFriend = [[dict objectForKey:@"qq"] integerValue];
+        NSInteger wxCircle = [[dict objectForKey:@"wxmoments"] integerValue];
+        NSInteger wxFriedn = [[dict objectForKey:@"wechat"] integerValue];
+        NSInteger weibo = [[dict objectForKey:@"sinaweibo"] integerValue];
+        
+        NSDictionary * plantDic = [NSDictionary dictionaryWithObjectsAndKeys:@"分享金币空间", @"1",  @"分享金币qq好友", @"2", @"分享金币朋友圈", @"3",  @"分享金币微信好友", @"4", @"分享金币微博", @"5", nil];
+        NSMutableDictionary * ditcitionary = [NSMutableDictionary dictionaryWithDictionary:plantDic];
+        
+        if (qqZone == 0) {
+            [ditcitionary removeObjectForKey:@"1"];
+        }
+        if (qqFriend == 0) {
+            [ditcitionary removeObjectForKey:@"2"];
+        }
+        if (wxCircle == 0) {
+            [ditcitionary removeObjectForKey:@"3"];
+        }
+        if (wxFriedn == 0) {
+            [ditcitionary removeObjectForKey:@"4"];
+        }
+        if (weibo == 0) {
+            [ditcitionary removeObjectForKey:@"5"];
+        }
+        
+        int i = 1;
+        for (NSDictionary * d in ditcitionary) {
+            UIImageView * img = [[UIImageView alloc] initWithFrame:CGRectMake(58 + (i - 1) * 14 + (i - 1) * 5, 34, 14, 14)];
+            img.image = [UIImage imageNamed:[NSString stringWithFormat:@"%@", [ditcitionary objectForKey:d]]];
+            [view addSubview:img];
+            i++;
+        }
+    }
+    
+    return cell;
+}
+
+#pragma mark - PullTableViewDelegate
+- (void)pullTableViewDidTriggerRefresh:(PullTableView *)pullTableView
+{
+    [self performSelector:@selector(refreshTable) withObject:nil afterDelay:0.1f];
+}
+
+- (void)pullTableViewDidTriggerLoadMore:(PullTableView *)pullTableView
+{
+    [self performSelector:@selector(loadMoreDataToTable) withObject:nil afterDelay:0.1f];
+}
+
+
+- (void)refreshTable
+{
+    sharePage = 1;
+    [self didGetShareCountListIsloading:NO withPage:sharePage andOid:nil];
+}
+
+- (void)loadMoreDataToTable
+{
+    [self didGetShareCountListIsloading:NO withPage:sharePage andOid:nil];
+}
+
+
+#pragma mark - CustomMethod
+
+- (void)startLoad{
+    loadingView = [[ghunterLoadingView alloc] initWithSuperView:self.view withGif:@"loading2" withIndicator:@"正在加载..."];
+    [loadingView startAnimition];
+}
+
+- (void)endLoad{
+    [loadingView inValidate];
+}
+
+
+
+
+- (IBAction)back:(id)sender {
+    
+    [self.navigationController popViewControllerAnimated:YES];
+}
+@end

@@ -1,0 +1,1262 @@
+//
+//  ghuntersearchViewController.m
+//  ghunter
+//
+//  Created by chensonglu on 14-9-16.
+//  Copyright (c) 2014年 ghunter. All rights reserved.
+//搜索页面
+
+#import "ghunterSkillViewController.h"
+#import "ghuntersearchViewController.h"
+// #import "HttpRequest.h"
+@interface ghuntersearchViewController ()
+@property (weak, nonatomic) IBOutlet UITextField *searchbar;
+@property (nonatomic, retain)NSMutableArray *searchArray;
+@property (weak, nonatomic) IBOutlet UIView *searchbar_bg;
+@property (strong, nonatomic) IBOutlet UIView *hotView;
+@property (strong, nonatomic) IBOutlet UIView *smallView;
+- (IBAction)taskBtn:(UIButton *)sender;
+- (IBAction)skillBtn:(UIButton *)sender;
+- (IBAction)hunter:(UIButton *)sender;
+@property (strong, nonatomic) IBOutlet UIButton *taskBtn;
+@property (strong, nonatomic) IBOutlet UIButton *skillBtn;
+@property (strong, nonatomic) IBOutlet UIButton *hunterBtn;
+@property (strong, nonatomic) IBOutlet UIView *kindView;
+
+@property (strong, nonatomic) IBOutlet UIView *bg;
+
+
+@property(strong,nonatomic) NSMutableArray* hotArr;
+
+@end
+
+@implementation ghuntersearchViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+     _bg.backgroundColor = Nav_backgroud;
+    // Do any additional setup after loading the view from its nib.
+    _taskpage = 1;
+    _hunterpage = 1;
+    _skillpage=1;
+    self.searchArray = [[NSMutableArray alloc] init];
+    _hotArr=[[NSMutableArray alloc] init];
+    self.searchbar_bg.clipsToBounds = YES;
+//    _searchbar.clearsOnBeginEditing=YES;
+    self.searchbar_bg.layer.cornerRadius = 8.0;
+    _searchbar.delegate = self;
+    _searchbar.clearButtonMode=UITextFieldViewModeAlways;
+    [_searchbar becomeFirstResponder];
+    _taskBtn.selected=YES;
+    _skillBtn.selected=NO;
+    _hunterBtn.selected=NO;
+    [_taskBtn setTitleColor:[UIColor colorWithRed:89/255.0 green:87/255.0 blue:87/255.0 alpha:1.0] forState:UIControlStateNormal];
+    [_taskBtn setTitleColor:[UIColor colorWithRed:234/255.0 green:85/255.0 blue:20/255.0 alpha:1.0] forState:UIControlStateSelected];
+    [_skillBtn setTitleColor:[UIColor colorWithRed:89/255.0 green:87/255.0 blue:87/255.0 alpha:1.0] forState:UIControlStateNormal];
+    [_skillBtn setTitleColor:[UIColor colorWithRed:234/255.0 green:85/255.0 blue:20/255.0 alpha:1.0] forState:UIControlStateSelected];
+    [_hunterBtn setTitleColor:[UIColor colorWithRed:89/255.0 green:87/255.0 blue:87/255.0 alpha:1.0] forState:UIControlStateNormal];
+    [_hunterBtn setTitleColor:[UIColor colorWithRed:234/255.0 green:85/255.0 blue:20/255.0 alpha:1.0] forState:UIControlStateSelected];
+    
+    self.searchbar.placeholder = @"任务关键字/分类";
+    searchTable = [[PullTableView alloc]initWithFrame:CGRectMake(0, 74, mainScreenWidth, mainScreenheight - 74) style:UITableViewStylePlain];
+    searchTable.delegate = self;
+    searchTable.dataSource = self;
+    searchTable.pullDelegate = self;
+    searchTable.showsVerticalScrollIndicator = NO;
+//    searchTable.separatorStyle = UITableViewCellSeparatorStyleNone;
+    searchTable.separatorColor = RGBA(235, 235, 235, 1);
+    searchTable.backgroundColor = RGBCOLOR(235, 235, 235);
+    
+    _smallView.layer.cornerRadius=8.0;
+    _hotView.hidden=YES;
+    if(_taskBtn.selected==YES)
+    {
+        [ghunterRequester getwithDelegate:self withUrl:URL_SEARCH_HOT withUserInfo:REQUEST_FOR_HOT withString:[NSString stringWithFormat:@"?api_session_id=%@&latitude=%@&longitude=%@&type=%@",[ghunterRequester getUserInfo:API_SESSION_ID],[ghunterRequester getUserInfo:LATITUDE],[ghunterRequester getUserInfo:LONGITUDE],[NSString stringWithFormat:@"%zd",0]]];
+    }
+    else if(_hunterBtn.selected== YES)
+    {
+        [ghunterRequester getwithDelegate:self withUrl:URL_SEARCH_HOT withUserInfo:REQUEST_FOR_HOT withString:[NSString stringWithFormat:@"?api_session_id=%@&latitude=%@&longitude=%@&type=%@",[ghunterRequester getUserInfo:API_SESSION_ID],[ghunterRequester getUserInfo:LATITUDE],[ghunterRequester getUserInfo:LONGITUDE],[NSString stringWithFormat:@"%zd",1]]];
+    }
+    else if(_skillBtn.selected==YES)
+    {
+        [ghunterRequester getwithDelegate:self withUrl:URL_SEARCH_HOT withUserInfo:REQUEST_FOR_HOT withString:[NSString stringWithFormat:@"?api_session_id=%@&latitude=%@&longitude=%@&type=%@",[ghunterRequester getUserInfo:API_SESSION_ID],[ghunterRequester getUserInfo:LATITUDE],[ghunterRequester getUserInfo:LONGITUDE],[NSString stringWithFormat:@"%zd",2]]];
+    }
+    UIView * view = [[UIView alloc] initWithFrame:CGRectZero];
+    [searchTable setTableFooterView:view];
+    [searchTable setTableFooterView:view];
+    searchTable.hidden=YES;
+    [self.view addSubview:searchTable];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+}
+-(void)keyboardWillShow:(NSNotification*)noti
+{
+    searchTable.hidden=YES;
+    _hotView.hidden=NO;
+    _kindView.hidden=NO;
+    
+}
+- (void)viewWillAppear:(BOOL)animated {
+    self.tabBarController.tabBar.hidden = YES;
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.navigationBar.alpha = 0;
+    [self.navigationController.view sendSubviewToBack:self.navigationController.navigationBar];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [MobClick event:UMEVENT_SEARCH];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+//    [[NSNotificationCenter defaultCenter] removeObserver:self
+//                                                    name:UIKeyboardWillHideNotification
+//                                                  object:nil];
+}
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (IBAction)back:(id)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+#pragma mark - UITableViewDelegate UITableViewDatasource
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if(_taskBtn.selected==YES) {
+        ghuntertaskViewController *ghuntertask = [[ghuntertaskViewController alloc] init];
+        NSDictionary *task = [self.searchArray objectAtIndex:indexPath.row];
+        ghuntertask.tid = [task objectForKey:@"tid"];
+        ghuntertask.callBackBlock = ^{};
+        [self.navigationController pushViewController:ghuntertask animated:YES];
+    } else if (_hunterBtn.selected== YES) {
+        NSDictionary *hunter = [self.searchArray objectAtIndex:indexPath.row];
+        ghunterUserCenterViewController *userCenter = [[ghunterUserCenterViewController alloc] init];
+        userCenter.uid = [hunter objectForKey:UID];
+        [self.navigationController pushViewController:userCenter animated:YES];
+    }
+    
+    else if (_skillBtn.selected== YES){
+        NSDictionary *skill = [self.searchArray objectAtIndex:indexPath.row];
+        ghunterSkillViewController *skillView = [[ghunterSkillViewController alloc] init];
+        skillView.skillid=[skill objectForKey:@"sid"];
+        skillView.callBackBlock = ^{};
+        [self.navigationController pushViewController:skillView animated:YES];
+//        NSLog(@"skillCellClicked:%@",indexPath);
+    }
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return [self.searchArray count];
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [self tableView:tableView cellForRowAtIndexPath:indexPath];
+    if(self.type==1&&indexPath.row==0)
+    {
+        return cell.frame.size.height+10;
+    }
+    return cell.frame.size.height;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *CellIdentifier = @"Cell";
+    UITableViewCell *cell = (UITableViewCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+    }
+    if(_taskBtn.selected==YES) {
+       /* NSDictionary *task = [self.searchArray objectAtIndex:indexPath.row];
+        NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"taskCell" owner:self options:nil];
+        cell = [nibs objectAtIndex:0];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        NSDictionary *owner = [task objectForKey:@"owner"];
+        
+        UILabel *title = (UILabel *)[cell viewWithTag:2];
+        OHAttributedLabel *bounty = (OHAttributedLabel *)[cell viewWithTag:3];
+        UIImageView *huntericon = (UIImageView *)[cell viewWithTag:4];
+        UILabel *distance = (UILabel *)[cell viewWithTag:5];
+        UILabel *huntername = (UILabel *)[cell viewWithTag:6];
+        UILabel *dateline = (UILabel *)[cell viewWithTag:7];
+        UILabel *bidnum = (UILabel *)[cell viewWithTag:8];
+        UILabel *hot = (UILabel *)[cell viewWithTag:9];
+        UIImageView *gender = (UIImageView *)[cell viewWithTag:10];
+        UILabel *age = (UILabel *)[cell viewWithTag:11];
+        UIView *bg = (UIView *)[cell viewWithTag:12];
+        UIImageView *bountyImage = (UIImageView *)[cell viewWithTag:13];
+        UILabel* label1=(UILabel*)[cell viewWithTag:99];
+        NSString *titleStr = [task objectForKey:@"title"];
+        CGRect titleFrame = title.frame;
+        CGSize titleSize = [titleStr sizeWithFont:title.font constrainedToSize:CGSizeMake(title.frame.size.width,MAXFLOAT) lineBreakMode:NSLineBreakByWordWrapping];
+        CGFloat titleDiff = titleSize.height - titleFrame.size.height;
+        titleFrame.size.height = titleSize.height;
+        [title setFrame:titleFrame];
+        
+        title.lineBreakMode = 0;
+        title.numberOfLines = 0;
+//        [title sizeToFit];
+        
+        [title setText:titleStr];
+        huntericon.clipsToBounds = YES;
+        huntericon.layer.cornerRadius = Radius / 2.0;
+        [huntericon sd_setImageWithURL:[owner objectForKey:@"middle_avatar"] placeholderImage:[UIImage imageNamed:@"avatar"]];
+        NSString *distancestar = [ghunterRequester calculateDistanceWithLatitude:[task objectForKey:@"latitude"] withLongitude:[task objectForKey:@"longitude"]];
+        [distance setText:distancestar];
+        [huntername setText:[owner objectForKey:@"username"]];
+        [dateline setText:[ghunterRequester getTimeDescripton:[task objectForKey:@"dateline"]]];
+        [bidnum setText:[NSString stringWithFormat:@"%@人竞标",[task objectForKey:@"biddingnum"]]];
+        [hot setText:[NSString stringWithFormat:@"%@热度",[task objectForKey:@"hot"]]];
+        if([[owner objectForKey:@"sex"] isEqualToString:@"0"]){
+            [gender setImage:[UIImage imageNamed:@"female_hunter_icon"]];
+        }else{
+            [gender setImage:[UIImage imageNamed:@"male_hunter_icon"]];
+        }
+        NSString *ageStr = [NSString stringWithFormat:@"%@岁",[owner objectForKey:@"age"]];
+        CGSize ageSize = [ageStr sizeWithFont:age.font];
+        CGRect ageFrame = age.frame;
+        ageFrame.size.width = ageSize.width;
+        age.frame = ageFrame;
+//        [age setText:ageStr];
+        CGRect distanceFrame = distance.frame;
+        distanceFrame.origin.x = age.frame.origin.x + age.frame.size.width + 3;
+        distance.frame = distanceFrame;
+        NSString *bountySelf = [task objectForKey:@"bounty"];
+        NSString *bountyStr = [NSString stringWithFormat:@"%@元",bountySelf];
+        CGSize bountySize = [bountyStr sizeWithFont:bounty.font];
+        CGRect bountyFrame = bounty.frame;
+        bountyFrame.origin.x = bg.frame.size.width - bountySize.width;
+        bountyFrame.size.width = bountySize.width;
+        bounty.frame = bountyFrame;
+        NSMutableAttributedString *attrStr = [NSMutableAttributedString attributedStringWithString:bountyStr];
+        [attrStr setFont:[UIFont systemFontOfSize:12.0] range:NSMakeRange([bountySelf length], 1)];
+        [attrStr setFont:[UIFont systemFontOfSize:24.0] range:NSMakeRange(0, [bountySelf length])];
+        [attrStr setTextColor:[UIColor colorWithRed:234/255.0 green:85/255.0 blue:20/255.0 alpha:1.0]];
+        [bounty setAttributedText:attrStr];
+        CGRect bountyImageFrame = bountyImage.frame;
+        bountyImageFrame.origin.x = bounty.frame.origin.x - 5 - bountyImageFrame.size.width;
+        bountyImage.frame = bountyImageFrame;
+        label1.frame=bountyImageFrame;
+        bg.layer.cornerRadius = Radius;
+        CGRect cellFrame = cell.frame;
+        cellFrame.size.height += titleDiff;
+        cell.frame = cellFrame;
+        return cell;*/
+        NSDictionary *task = [self.searchArray objectAtIndex:indexPath.row];
+        NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"taskCell" owner:self options:nil];
+        cell = [nibs objectAtIndex:0];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        NSDictionary *owner = [task objectForKey:@"owner"];
+        
+        
+        //        UILabel *title = (UILabel *)[cell viewWithTag:2];
+        OHAttributedLabel *bounty = (OHAttributedLabel *)[cell viewWithTag:3];
+        UIImageView *huntericon = (UIImageView *)[cell viewWithTag:4];
+        UILabel *distance = (UILabel *)[cell viewWithTag:5];
+        UILabel *huntername = (UILabel *)[cell viewWithTag:6];
+        UILabel *dateline = (UILabel *)[cell viewWithTag:7];
+        UILabel *bidnum = (UILabel *)[cell viewWithTag:8];
+        UILabel *hot = (UILabel *)[cell viewWithTag:9];
+        UIImageView *gender = (UIImageView *)[cell viewWithTag:10];
+        //        UILabel *age = (UILabel *)[cell viewWithTag:11];
+        UIView *bg = (UIView *)[cell viewWithTag:12];
+        UIImageView *bountyImage = (UIImageView *)[cell viewWithTag:13];
+        UILabel* goldLabel=(UILabel*)[cell viewWithTag:99];
+        UILabel *tabbartxt  = (UILabel *)[cell viewWithTag:110];
+        UIImageView *img2= (UIImageView *)[cell viewWithTag:111];
+        //        UIImageView *Image1 = (UIImageView *)[cell viewWithTag:91];
+        //        UIImageView *Image2 = (UIImageView *)[cell viewWithTag:92];
+        //        UIImageView *Image3 = (UIImageView *)[cell viewWithTag:93];
+        UIView* ageview=(UIView*)[cell viewWithTag:54];
+        ageview.layer.cornerRadius = 2.0;
+        
+        // 移除虚线
+        UILabel * xuxianLb = (UILabel *)[cell viewWithTag:999];
+        [xuxianLb removeFromSuperview];
+        
+        /*
+         CGRect bgFrame = bg.frame;
+         CGRect Image1Frame = Image1.frame;
+         CGRect Image2Frame = Image2.frame;
+         CGRect Image3Frame = Image3.frame;
+         CGRect datelineFrame = dateline.frame;
+         CGRect bidnumFrame = bidnum.frame;
+         CGRect hotFrame = hot.frame;
+         
+         Image1Frame.origin.x = bgFrame.origin.x+72;
+         bidnumFrame.origin.x = Image1Frame.size.width+75;
+         bidnum.frame = bidnumFrame;
+         Image1.frame = Image1Frame;
+         
+         Image2Frame.origin.x = bgFrame.origin.x +139;
+         hotFrame.origin.x =bgFrame.origin.x+152;
+         hot.frame = hotFrame;
+         Image2.frame = Image2Frame;
+         
+         
+         Image3Frame.origin.x = bgFrame.origin.x +210;
+         datelineFrame.origin.x =bgFrame.origin.x+223;
+         dateline.frame = datelineFrame;
+         Image3.frame = Image3Frame;
+         
+         CGRect huntericonfram = huntericon.frame;
+         huntericonfram.origin.y = cell.frame.origin.x+15;
+         huntericon.frame = huntericonfram;
+         
+         */
+        if ([[[self.searchArray objectAtIndex:indexPath.row] objectForKey:@"istop"] intValue]==1) {
+            UIImageView *redtabbar = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 25, 15)];
+            redtabbar.image = [UIImage imageNamed:@"推荐"];
+            [cell.contentView addSubview:redtabbar];
+            UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(3, 3, 20, 10)];
+            label.text = @"推荐";
+            label.font = [UIFont systemFontOfSize:8];
+            label.textColor=[UIColor whiteColor];
+            [redtabbar addSubview:label];
+        }
+        
+        img2.hidden = YES;
+        NSString*string =[task objectForKey:@"color"];
+        //        NSLog(@"擦-------为：%@",string);
+        NSString *b = [string substringFromIndex:0];
+        //        NSLog(@"-----%@",b);
+        NSString *colorstr = [NSString stringWithFormat:@"0x%@",b];
+        tabbartxt.textColor = [Monitor colorWithHexString:colorstr alpha:1.0f];
+        tabbartxt.font = [UIFont systemFontOfSize:10];
+        tabbartxt.clipsToBounds = YES;
+        tabbartxt.layer.cornerRadius = 3.0;
+        tabbartxt.text = [task objectForKey:@"c_name"];
+        [tabbartxt.layer setBorderWidth:1.0];   //边框宽度
+        tabbartxt.textAlignment = NSTextAlignmentCenter;
+        [tabbartxt.layer setBorderColor:[Monitor colorWithHexString:colorstr alpha:1.0f].CGColor];//边框颜色
+        //        [tabbartxt.layer setBorderColor:(__bridge CGColorRef _Nullable)([UIColor colorWithRed:0 green:177 blue:205 alpha:1.0f])];
+        
+        NSString *LENstr = [task objectForKey:@"c_name"];
+        if ([LENstr length]>1) {
+            CGRect tabbartxtFrame = tabbartxt.frame;
+            tabbartxtFrame.size.width =25;
+            tabbartxt.frame = tabbartxtFrame;
+        }
+        if ([LENstr length]>2) {
+            CGRect tabbartxtFrame = tabbartxt.frame;
+            tabbartxtFrame.size.width =35;
+            tabbartxt.frame = tabbartxtFrame;
+        }
+        if ([LENstr length]>3) {
+            CGRect tabbartxtFrame = tabbartxt.frame;
+            tabbartxtFrame.size.width = 45;
+            tabbartxt.frame = tabbartxtFrame;
+        }
+        
+        //        NSLog(@"%f,%f,%f,%f", huntername.frame.origin.x, huntername.frame.origin.y, tabbartxt.frame.size.width, tabbartxt.frame.size.height);
+        //
+        //        CGRect titleFrame = title.frame;
+        //        titleFrame.origin.x = tabbartxt.frame.origin.x+40;
+        //        titleFrame.origin.y = tabbartxt.frame.origin.y;
+        
+        
+        
+        NSString *titleStr = [task objectForKey:@"title"];
+        CGSize titleSize = [titleStr sizeWithFont:tabbartxt.font constrainedToSize:CGSizeMake(tabbartxt.frame.size.width,MAXFLOAT) lineBreakMode:NSLineBreakByWordWrapping];
+        //        CGFloat titleDiff = titleSize.height - titleFrame.size.height;
+        //        titleFrame.size.height = titleSize.height;
+        //        titleFrame.origin.x = tabbartxtFrame.origin.x+tabbartxtFrame.size.width+10;
+        //        [title setFrame:titleFrame];
+        
+        //        title.lineBreakMode = 0;
+        //        [title sizeToFit];
+        //        title.numberOfLines = 1;
+        //        [title setText:titleStr];
+        
+        
+        // 内容
+        UILabel * titleLb = [[UILabel alloc] initWithFrame:CGRectMake(huntername.frame.origin.x + tabbartxt.frame.size.width + 5, cell.frame.size.height / 2 - 2, cell.frame.size.width / 2 + 40, 20)];
+        [titleLb setFont:[UIFont systemFontOfSize:14]];
+        titleLb.textColor = RGBCOLOR(51, 51, 51);
+        //        titleLb.backgroundColor = [UIColor redColor];
+        titleLb.numberOfLines = 1;
+        [titleLb setText:titleStr];
+        [cell addSubview:titleLb];
+        
+        
+        huntericon.layer.masksToBounds =YES;
+        huntericon.layer.cornerRadius = 25;
+        [huntericon sd_setImageWithURL:[owner objectForKey:@"middle_avatar"] placeholderImage:[UIImage imageNamed:@"avatar"]];
+        huntericon.userInteractionEnabled = YES;
+        huntericon.tag = indexPath.row;
+        UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(iconTaped:)];
+        [huntericon addGestureRecognizer:tap];
+        // 计算距离
+        NSString *distancestar = [ghunterRequester calculateDistanceWithLatitude:[task objectForKey:@"latitude"] withLongitude:[task objectForKey:@"longitude"]];
+        [distance setText:distancestar];
+        distance.textColor = RGBCOLOR(153, 153, 153);
+        distance.font = [UIFont systemFontOfSize:10];
+        NSString *nameStr = [owner objectForKey:@"username"];
+        CGSize nameSize = [nameStr sizeWithFont:huntername.font];
+        CGRect nameFrame = huntername.frame;
+        if (nameFrame.origin.x + nameSize.width > bountyImage.frame.origin.x) {
+            nameFrame.size.width = bountyImage.frame.origin.x - nameFrame.origin.x;
+        }
+        huntername.frame = nameFrame;
+        [huntername setText:[owner objectForKey:@"username"]];
+        huntername.font = [UIFont systemFontOfSize:12];
+        
+        [dateline setText:[ghunterRequester getTimeDescripton:[task objectForKey:@"dateline"]]];
+        [bidnum setText:[NSString stringWithFormat:@"%@人竞标",[task objectForKey:@"biddingnum"]]];
+        [hot setText:[NSString stringWithFormat:@"%@热度",[task objectForKey:@"hot"]]];
+        if([[owner objectForKey:@"sex"] isEqualToString:@"0"]){
+            [gender setImage:[UIImage imageNamed:@"female"]];
+            //            ageview.backgroundColor = RGBCOLOR(240, 136, 146);
+        }else{
+            [gender setImage:[UIImage imageNamed:@"male"]];
+            //            ageview.backgroundColor = RGBCOLOR(119, 158, 211);
+        }
+        //        NSString *ageStr = [NSString stringWithFormat:@"%@",[owner objectForKey:@"age"]];
+        //        CGSize ageSize = [ageStr sizeWithFont:age.font];
+        //        CGRect ageFrame = age.frame;
+        //        ageFrame.size.width = ageSize.width;
+        //        age.frame = ageFrame;
+        //        [age setText:ageStr];
+        //        CGRect distanceFrame = distance.frame;
+        //        distanceFrame.origin.x = age.frame.origin.x + age.frame.size.width + 83;
+        //        distance.frame = distanceFrame;
+        //        distanceFrame.origin.x = gender.frame.origin.x + 20;
+        //        distance.frame = distanceFrame;
+        
+        NSString *bountySelf = [task objectForKey:@"bounty"];
+        NSString *bountyStr = [NSString stringWithFormat:@"%@元",bountySelf];
+        CGSize bountySize = [bountyStr sizeWithFont:bounty.font];
+        CGRect bountyFrame = bounty.frame;
+        bountyFrame.origin.x = bg.frame.size.width - bountySize.width;
+        bountyFrame.size.width = bountySize.width;
+        bounty.frame = bountyFrame;
+        NSMutableAttributedString *attrStr = [NSMutableAttributedString attributedStringWithString:bountyStr];
+        //        [attrStr setFont:[UIFont systemFontOfSize:12.0] range:NSMakeRange([bountySelf length], 1)];
+        //        [attrStr setFont:[UIFont systemFontOfSize:24.0] range:NSMakeRange(0, [bountySelf length])];
+        [attrStr setTextColor:[UIColor colorWithRed:234/255.0 green:85/255.0 blue:20/255.0 alpha:1.0]];
+        [bounty setAttributedText:attrStr];
+        [bounty setFont:[UIFont systemFontOfSize:12]];
+        
+        //        CGRect bountyImageFrame = bountyImage.frame;
+        //        bountyImageFrame.origin.x = bounty.frame.origin.x - 5 - bountyImageFrame.size.width;
+        //        bountyImage.frame = bountyImageFrame;
+        //        goldLabel.frame=bountyImageFrame;
+        goldLabel.text=@"赏";
+        bg.layer.cornerRadius = Radius;
+        
+        // 赏字位置
+        CGRect goldLbFrame = goldLabel.frame;
+        
+        goldLbFrame.origin.x = mainScreenWidth - bountySize.width - 30;
+        goldLbFrame.origin.y = huntername.frame.origin.y + 3;
+        goldLbFrame.size.width = goldLabel.frame.size.width;
+        goldLbFrame.size.height = goldLabel.frame.size.height;
+        goldLbFrame.size.width = goldLabel.frame.size.width;
+        goldLbFrame.size.height = goldLabel.frame.size.height;
+        
+        goldLabel.font = [UIFont systemFontOfSize:12];
+        
+        goldLabel.frame = goldLbFrame;
+        bountyImage.frame = goldLbFrame;
+        
+        // 元
+        CGRect attLbStrFrame = bounty.frame;
+        //        attLbStrFrame.origin.x = goldLbFrame.origin.x + 20 + goldLabel.text.length + 10;
+        attLbStrFrame.origin.x = mainScreenWidth - bountySize.width - 10;
+        attLbStrFrame.origin.y = goldLbFrame.origin.y + 5;
+        bounty.frame = attLbStrFrame;
+        bounty.textAlignment = NSTextAlignmentRight;
+        
+        // 标签
+        CGRect tabbartextLbFrame = tabbartxt.frame;
+        tabbartextLbFrame.origin.x = huntername.frame.origin.x;
+        tabbartextLbFrame.origin.y = gender.frame.origin.y + gender.frame.size.height + 50;
+        
+        tabbartxt.frame = tabbartextLbFrame;
+        
+        // 下面6个图标对齐
+        UIImageView * bidImgV = (UIImageView *)[cell viewWithTag:91];
+        UIImageView * hotImgV = (UIImageView *)[cell viewWithTag:92];
+        UIImageView * timeImgV = (UIImageView *)[cell viewWithTag:93];
+        
+        CGRect bidImgVFrame = bidImgV.frame;
+        CGRect hotImgVFrame = hotImgV.frame;
+        CGRect timeImgVFrame = timeImgV.frame;
+        CGRect bidnumFrame = bidnum.frame;
+        CGRect hotLbFrame = hot.frame;
+        CGRect timeLbFrame = dateline.frame;
+        
+        CGFloat height = cell.frame.size.height - 22;
+        
+        bidImgVFrame.origin.x = tabbartxt.frame.origin.x;
+        bidImgVFrame.origin.y = height + 2;
+        hotImgVFrame.origin.x = tabbartxt.frame.origin.x + 80;
+        hotImgVFrame.origin.y = height;
+        timeImgVFrame.origin.x =tabbartxt.frame.origin.x + 160;
+        timeImgVFrame.origin.y = height + 1;
+        
+        bidnumFrame.origin.x = bidImgVFrame.origin.x + 14;
+        bidnumFrame.origin.y = height - 1;
+        hotLbFrame.origin.x = hotImgVFrame.origin.x + 14;
+        hotLbFrame.origin.y = height - 1;
+        timeLbFrame.origin.x = timeImgVFrame.origin.x + 14;
+        timeLbFrame.origin.y = height - 2;
+        
+        bidImgV.frame = bidImgVFrame;
+        hotImgV.frame = hotImgVFrame;
+        timeImgV.frame = timeImgVFrame;
+        bidnum.frame = bidnumFrame;
+        hot.frame = hotLbFrame;
+        dateline.frame = timeLbFrame;
+        
+        
+        CGRect cellFrame = cell.frame;
+        
+        cellFrame.size.height = cell.bounds.size.height - 16;
+        cell.frame = cellFrame;
+        if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+            [cell setSeparatorInset:UIEdgeInsetsZero];
+        }
+        
+        if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+            [cell setLayoutMargins:UIEdgeInsetsZero];
+        }
+        
+    }
+        else if (_hunterBtn.selected== YES) {
+        NSDictionary *follow = [self.searchArray objectAtIndex:indexPath.row];
+        NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"followsView" owner:self options:nil];
+        cell = [nibs objectAtIndex:0];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.backgroundColor = [UIColor clearColor];
+        
+        UIImageView *userIcon = (UIImageView *)[cell viewWithTag:1];
+        UILabel *name = (UILabel *)[cell viewWithTag:2];
+        UIImageView *gender = (UIImageView *)[cell viewWithTag:3];
+        UILabel *age = (UILabel *)[cell viewWithTag:4];
+        UIImageView *identity = (UIImageView *)[cell viewWithTag:5];
+        UILabel *level = (UILabel *)[cell viewWithTag:6];
+        UIView *back = (UIView *)[cell viewWithTag:7];
+        UIView * line=(UIView*)[cell viewWithTag:10];
+            line.hidden = YES;
+//        UIView *skillBack = (UIView *)[cell viewWithTag:8];
+        userIcon.clipsToBounds = YES;
+        userIcon.layer.cornerRadius = userIcon.frame.size.height/2.0;
+        [userIcon sd_setImageWithURL:[follow objectForKey:@"middle_avatar"] placeholderImage:[UIImage imageNamed:@"avatar"]];
+        [name setText:[follow objectForKey:@"username"]];
+//        if([[follow objectForKey:@"sex"] isEqualToString:@"0"]){
+//            [gender setImage:[UIImage imageNamed:@"female_hunter_icon"]];
+//        }else{
+//            [gender setImage:[UIImage imageNamed:@"male_hunter_icon"]];
+//        }
+        if([[follow objectForKey:@"sex"] isEqualToString:@"0"]){
+            [gender setImage:[UIImage imageNamed:@"female"]];
+        }else{
+            [gender setImage:[UIImage imageNamed:@"male"]];
+        }
+//        [age setText:[NSString stringWithFormat:@"%@岁",[follow objectForKey:@"age"]]];
+        CGSize usernameSize = [[follow objectForKey:USERNAME] sizeWithFont:name.font];
+        if (name.frame.origin.x + usernameSize.width + 3 + gender.frame.size.width + 3 + age.frame.size.width > back.frame.size.width) {
+            usernameSize.width = back.frame.size.width - age.frame.size.width - 3 - gender.frame.size.width - 3 - name.frame.origin.x;
+        }
+        CGRect nameFrame = name.frame;
+        nameFrame.size.width = usernameSize.width + 3;
+        name.frame = nameFrame;
+        CGRect genderFrame = gender.frame;
+        genderFrame.origin.x = name.frame.origin.x + name.frame.size.width + 3;
+        gender.frame = genderFrame;
+        CGRect ageFrame = age.frame;
+        ageFrame.origin.x = gender.frame.origin.x + gender.frame.size.width + 3;
+        age.frame = ageFrame;
+        UIImageView * levelImg = (UIImageView *)[cell viewWithTag:88];
+
+        if([[follow objectForKey:@"is_identity"] isEqualToString:@"3"]) {
+            
+            CGRect levelFrame = levelImg.frame;
+            
+            TQStarRatingView *star = [[TQStarRatingView alloc] initWithFrame:CGRectMake(levelImg.frame.origin.x + levelImg.frame.size.width + 3, levelImg.frame.origin.y + (levelImg.frame.size.height - 10) / 2.0-2.0, 50, 10) numberOfStar:5];
+            [back addSubview:star];
+            [star setScore:[[follow objectForKey:@"kopubility"] floatValue]];
+            [star setuserInteractionEnabled:NO];
+            
+        } else if ([[follow objectForKey:@"is_identity"] isEqualToString:@"1"]) {
+            
+            TQStarRatingView *star = [[TQStarRatingView alloc] initWithFrame:CGRectMake(identity.frame.origin.x + identity.frame.size.width + 3, identity.frame.origin.y + (identity.frame.size.height - 10) / 2.0, 50, 10) numberOfStar:5];
+            [back addSubview:star];
+            [star setScore:[[follow objectForKey:@"kopubility"] floatValue]];
+            [star setuserInteractionEnabled:NO];
+            
+            [identity setImage:[UIImage imageNamed:@"实名认证"]];
+        }
+        
+        levelImg.image = [UIImage imageNamed:[NSString stringWithFormat:@"等级是%@",[follow objectForKey:@"level"]]];
+//        [level setText:[NSString stringWithFormat:@"lv%@",[follow objectForKey:@"level"]]];
+//        TQStarRatingView *star = [[TQStarRatingView alloc] initWithFrame:CGRectMake(level.frame.origin.x + level.frame.size.width + 3, level.frame.origin.y + (level.frame.size.height - 10) / 2.0, 50, 10) numberOfStar:5];
+//        [back addSubview:star];
+//        [star setScore:[[follow objectForKey:@"kopubility"] floatValue]];
+//        [star setuserInteractionEnabled:NO];
+        toshowTagList *tagList = [[toshowTagList alloc] initWithFrame:CGRectMake(0,0,back.frame.size.width - 50,0)];
+        NSArray *skills = [follow objectForKey:@"skills"];
+        NSMutableArray *array = [[NSMutableArray alloc] init];
+        for (NSUInteger i = 0; i < [skills count]; i++) {
+            NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+            [dic setObject:[skills objectAtIndex:i] forKey:@"title"];
+//            [dic setObject:[UIColor blackColor] forKey:@"titleColor"];
+//            [dic setObject:[UIColor whiteColor] forKey:@"backgroundColor"];
+//            [dic setObject:RGBA(89, 87, 87, 1.0) forKey:@"borderColor"];
+            [dic setObject:[UIColor colorWithRed:156.0 / 255 green:156.0 / 255 blue:153.0 / 255 alpha:1] forKey:@"titleColor"];
+            [dic setObject:[UIColor whiteColor] forKey:@"backgroundColor"];
+            [dic setObject:RGBA(248.0, 140.0, 86, 1.0) forKey:@"borderColor"];
+            [dic setObject:@"1.0" forKey:@"borderWidth"];
+            [array addObject:dic];
+        }
+        [tagList addTags:array];
+        UIView *skillBG;
+        skillBG = [[UIView alloc] initWithFrame:CGRectMake(50, 45, back.frame.size.width - 60, tagList.heightFinal)];
+        skillBG.backgroundColor = RGBCOLOR(245, 245, 245);
+
+        CGRect r = [tagList frame];
+        r.size.height += tagList.heightFinal;
+        tagList.frame = r;
+        [skillBG addSubview:tagList];
+        CGRect r1 = [cell frame];
+        r1.size.height += tagList.heightFinal;
+        cell.frame = r1;
+        [cell addSubview:skillBG];
+        if(indexPath.row == 0){
+            if ([self.searchArray count] == 1) {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight | UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+                back.layer.mask = maskLayer;
+            } else {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+                back.layer.mask = maskLayer;
+//                CGRect frame1=back.frame;
+//                frame1.origin.y+=10;
+//                back.frame=frame1;
+//                CGRect frame2=line.frame;
+//                frame2.origin.y-=19;
+//                line.frame=frame2;
+            }
+        }
+        if(indexPath.row == [self.searchArray count] - 1) {
+            if ([self.searchArray count] == 1) {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight | UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+                back.layer.mask = maskLayer;
+            } else {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+                back.layer.mask = maskLayer;
+            }
+        }
+            if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+                [cell setSeparatorInset:UIEdgeInsetsZero];
+            }
+            
+            if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+                [cell setLayoutMargins:UIEdgeInsetsZero];
+            }
+            
+    }
+        else if (_skillBtn.selected==YES){
+            NSDictionary *skill = [self.searchArray objectAtIndex:indexPath.row];
+            
+            NSLog(@"--------%@",skill);
+            NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"skillCell" owner:self options:nil];
+            cell = [nibs objectAtIndex:0];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            
+            
+            NSDictionary *owner = [skill objectForKey:@"owner"];
+            //        图片内容
+            UIImageView *imagetent = (UIImageView *)[cell viewWithTag:111];
+            [imagetent sd_setImageWithURL:[skill objectForKey:@"img"] placeholderImage:[UIImage imageNamed:@"avatar"]];
+            imagetent.clipsToBounds = YES;
+            imagetent.layer.cornerRadius = 3.0;
+            imagetent.frame = CGRectMake(imagetent.frame.origin.x, imagetent.frame.origin.y - 5, imagetent.frame.size.width, imagetent.frame.size.height);
+            
+            UILabel *title = (UILabel *)[cell viewWithTag:2];
+            OHAttributedLabel *bounty = (OHAttributedLabel *)[cell viewWithTag:3];
+            UIImageView *huntericon = (UIImageView *)[cell viewWithTag:4];
+            UILabel *distance = (UILabel *)[cell viewWithTag:5];
+            UILabel *huntername = (UILabel *)[cell viewWithTag:6];
+            UILabel *dateline = (UILabel *)[cell viewWithTag:7];
+            UILabel *bidnum = (UILabel *)[cell viewWithTag:8];
+            UILabel *hot = (UILabel *)[cell viewWithTag:9];
+            UIImageView *gender = (UIImageView *)[cell viewWithTag:10];
+            UILabel *age = (UILabel *)[cell viewWithTag:11];
+            UIView *bg = (UIView *)[cell viewWithTag:12];
+            UIImageView *bountyImage = (UIImageView *)[cell viewWithTag:13];
+            UILabel* goldLabel=(UILabel*)[cell viewWithTag:99];
+            UIView* ageview=(UIView*)[cell viewWithTag:54];
+            //        [title setFrame:titleFrame];
+            
+            CGRect huntericonfram = huntericon.frame;
+            huntericonfram.origin.y = cell.frame.origin.x+15;
+            huntericon.frame = huntericonfram;
+            if ([[[self.searchArray objectAtIndex:indexPath.row] objectForKey:@"istop"] intValue]==1) {
+                UIImageView *redtabbar = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 25, 15)];
+                redtabbar.image = [UIImage imageNamed:@"推荐"];
+                [cell.contentView addSubview:redtabbar];
+                UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(3, 3, 20, 10)];
+                label.text = @"推荐";
+                label.font = [UIFont systemFontOfSize:8];
+                label.textColor=[UIColor whiteColor];
+                [redtabbar addSubview:label];
+            }
+            huntericon.layer.masksToBounds =YES;
+            huntericon.layer.cornerRadius = 25;
+            [huntericon sd_setImageWithURL:[owner objectForKey:@"avatar"]placeholderImage:[UIImage imageNamed:@"avatar"]];
+            huntericon.userInteractionEnabled = YES;
+            huntericon.tag = indexPath.row;
+            UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(iconTaped:)];
+            [huntericon addGestureRecognizer:tap];
+            NSString *distancestar = [ghunterRequester calculateDistanceWithLatitude:[skill objectForKey:@"latitude"] withLongitude:[skill objectForKey:@"longitude"]];
+            [distance setText:distancestar];
+            distance.textColor = RGBCOLOR(153, 153, 153);
+            NSString *nameStr = [owner objectForKey:@"username"];
+            CGSize nameSize = [nameStr sizeWithFont:huntername.font];
+            CGRect nameFrame = huntername.frame;
+            if (nameFrame.origin.x + nameSize.width > bountyImage.frame.origin.x) {
+                nameFrame.size.width = bountyImage.frame.origin.x - nameFrame.origin.x;
+            }
+            huntername.frame = nameFrame;
+            [huntername setText:[owner objectForKey:@"username"]];
+            huntername.font = [UIFont systemFontOfSize:12];
+            [dateline setText:[ghunterRequester getTimeDescripton:[skill objectForKey:@"dateline"]]];
+            [bidnum setText:[NSString stringWithFormat:@"%@人购买",[skill objectForKey:@"salenum"]]];
+            [hot setText:[NSString stringWithFormat:@"%@热度",[skill objectForKey:@"hot"]]];
+            if([[owner objectForKey:@"sex"] isEqualToString:@"0"]){
+                [gender setImage:[UIImage imageNamed:@"female"]];
+                //            ageview.backgroundColor = RGBCOLOR(240, 136, 146);
+            }else{
+                [gender setImage:[UIImage imageNamed:@"male"]];
+                //            ageview.backgroundColor = RGBCOLOR(119, 158, 211);
+            }
+            
+            ageview.layer.cornerRadius = 2.0;
+            //        NSString *ageStr = [NSString stringWithFormat:@"%@",[owner objectForKey:@"age"]];
+            //        CGSize ageSize = [ageStr sizeWithFont:age.font];
+            //        CGRect ageFrame = age.frame;
+            //        ageFrame.size.width = ageSize.width;
+            //        age.frame = ageFrame;
+            //        [age setText:ageStr];
+            CGRect distanceFrame = distance.frame;
+            //        distanceFrame.origin.x = age.frame.origin.x + age.frame.size.width + 83;
+            distanceFrame.origin.x = gender.frame.origin.x + 10;
+            distance.frame = distanceFrame;
+            
+            UILabel *tabbartxt  = (UILabel *)[cell viewWithTag:110];
+            
+            
+            NSString*string =[skill objectForKey:@"color"];
+            //        NSLog(@"擦-------为：%@",string);
+            NSString *b = [string substringFromIndex:0];
+            //        NSLog(@"-----%@",b);
+            NSString *colorstr = [NSString stringWithFormat:@"0x%@",b];
+            //        NSLog(@"====%@",colorstr);
+            //        NSInteger version = [colorstr integerValue];
+            //        inte  version = [colorstr intValue];
+            
+            tabbartxt.textColor =  [Monitor colorWithHexString:colorstr alpha:1.0f];
+            tabbartxt.font = [UIFont systemFontOfSize:10];
+            [tabbartxt.layer setBorderWidth:1.0];   //边框宽度
+            tabbartxt.clipsToBounds = YES;
+            tabbartxt.text = [skill objectForKey:@"c_name"];
+            tabbartxt.layer.cornerRadius = 3.0;
+            tabbartxt.textAlignment = NSTextAlignmentCenter;
+            [tabbartxt.layer setBorderColor:[Monitor colorWithHexString:colorstr alpha:1.0f].CGColor];//边框颜色
+            //        [tabbartxt.layer setBorderColor:(__bridge CGColorRef _Nullable)([UIColor colorWithRed:0 green:177 blue:205 alpha:1.0f])];
+            
+            NSString *LENstr = [skill objectForKey:@"c_name"];
+            CGRect tabbartxtFrame = tabbartxt.frame;
+            if ([LENstr length]>1) {
+                tabbartxtFrame.size.width =25;
+                tabbartxtFrame.origin.y = huntericon.frame.size.height + huntericon.frame.origin.y + 20;
+                tabbartxt.frame = tabbartxtFrame;
+            }
+            if ([LENstr length]>2) {
+                tabbartxtFrame.size.width =35;
+                tabbartxtFrame.origin.y = huntericon.frame.size.height + huntericon.frame.origin.y + 20;
+                tabbartxt.frame = tabbartxtFrame;
+            }
+            if ([LENstr length]>3) {
+                tabbartxtFrame.size.width = 45;
+                tabbartxtFrame.origin.y = huntericon.frame.size.height + huntericon.frame.origin.y + 20;
+                tabbartxt.frame = tabbartxtFrame;
+            }
+            
+            NSString *titleStr = [skill objectForKey:@"skill"];
+            CGRect titleFrame = title.frame;
+            CGSize titleSize = [titleStr sizeWithFont:title.font constrainedToSize:CGSizeMake(title.frame.size.width,MAXFLOAT) lineBreakMode:NSLineBreakByWordWrapping];
+            CGFloat titleDiff = titleSize.height - titleFrame.size.height;
+            titleFrame.size.height = titleSize.height;
+            titleFrame.origin.x = tabbartxtFrame.origin.x+tabbartxtFrame.size.width+15;
+            titleFrame.origin.y = tabbartxtFrame.origin.y;
+            title.lineBreakMode = 0;
+            title.numberOfLines = 1;
+            [title setText:titleStr];
+            
+            NSString *bountySelf = [skill objectForKey:@"price"];
+            NSString *priceinit = [skill objectForKey:@"priceunit"];
+            NSString *bountyStr = [NSString stringWithFormat:@"%@元/%@",bountySelf,priceinit];
+            CGSize bountySize = [bountyStr sizeWithFont:bounty.font];
+            /*
+             CGRect bountyFrame = bounty.frame;
+             bountyFrame.origin.x = bg.frame.size.width - bountySize.width + mainScreenWidth / 16.0;
+             bountyFrame.size.width = bountySize.width;
+             bounty.frame = bountyFrame;
+             */
+            
+            NSMutableAttributedString *attrStr = [NSMutableAttributedString attributedStringWithString:bountyStr];
+            //        [attrStr setFont:[UIFont systemFontOfSize:12.0] range:NSMakeRange([bountySelf length], 1)];
+            //        [attrStr setFont:[UIFont systemFontOfSize:24.0] range:NSMakeRange(0, [bountySelf length])];
+            [attrStr setTextColor:[UIColor colorWithRed:234/255.0 green:85/255.0 blue:20/255.0 alpha:1.0]];
+            [bounty setAttributedText:attrStr];
+            [bounty setFont:[UIFont systemFontOfSize:12]];
+            
+            
+            goldLabel.text=@"售";
+            bg.layer.cornerRadius = Radius;
+            
+            bounty.textAlignment = NSTextAlignmentRight;
+            // 元
+            CGRect attLbStrFrame = bounty.frame;
+            //        attLbStrFrame.origin.x = goldLbFrame.origin.x + 20 + goldLabel.text.length + 40;
+            attLbStrFrame.origin.x = bountySize.width - 90;
+            attLbStrFrame.origin.y = goldLabel.frame.origin.y;
+            bounty.frame = attLbStrFrame;
+            
+            
+            // 售字位置
+            CGRect goldLbFrame = goldLabel.frame;
+            
+            goldLbFrame.origin.x = bountySize.width - 95;;
+            goldLbFrame.origin.y = huntername.frame.origin.y + 10;
+            
+            goldLbFrame.size.width = goldLabel.frame.size.width - 7;
+            goldLbFrame.size.height = goldLabel.frame.size.height - 7;
+            
+            goldLabel.font = [UIFont systemFontOfSize:12];
+            
+            goldLabel.frame = goldLbFrame;
+            bountyImage.frame = goldLbFrame;
+            
+            // 虚线
+            UILabel * xuxianLb = (UILabel *)[cell viewWithTag:999];
+            CGRect xuxianFrame = xuxianLb.frame;
+            xuxianFrame.origin.y = tabbartxt.frame.origin.y - 5;
+            xuxianLb.frame = xuxianFrame;
+            
+            CGRect cellFrame = cell.frame;
+            cellFrame.size.height += titleDiff+6;
+            cell.frame = cellFrame;
+            if ([cell respondsToSelector:@selector(setSeparatorInset:)]) {
+                [cell setSeparatorInset:UIEdgeInsetsZero];
+            }
+            
+            if ([cell respondsToSelector:@selector(setLayoutMargins:)]) {
+                [cell setLayoutMargins:UIEdgeInsetsZero];
+            }
+        }
+    return cell;
+}
+#pragma mark - ASIHTTPRequest
+//http请求处理的代理方法
+-(void)requestFinished:(ASIHTTPRequest *)request
+{
+    int responseCode=[request responseStatusCode];
+    NSError *error;
+    NSData *responseData = [request responseData];
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableLeaves error:&error];
+    NSString *error_number = [dic objectForKey:ERROR];
+    if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_REFRESH_SEARCH_TASK]){
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            [self.searchArray removeAllObjects];
+            _taskpage = 2;
+            NSArray *array = [dic valueForKey:@"tasks"];
+            [self.searchArray addObjectsFromArray:array];
+            _hotView.hidden=YES;
+            _kindView.hidden=YES;
+            searchTable.hidden=NO;
+            [_searchbar resignFirstResponder];
+
+            [searchTable reloadData];
+            if([self.searchArray count]>0)
+            {
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+                [searchTable scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:NO];
+            }
+        } else if ([dic objectForKey:@"msg"]) {
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        } else {
+            [ghunterRequester noMsg];
+        }
+    }else if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_LOADMORE_SEARCH_TASK]){
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            _taskpage++;
+            NSArray *array = [dic valueForKey:@"tasks"];
+            [self.searchArray addObjectsFromArray:array];
+            NSLog(@"%zd",self.searchArray.count);
+            [_searchbar resignFirstResponder];
+
+            [searchTable reloadData];
+        } else if ([dic objectForKey:@"msg"]) {
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        } else {
+            [ghunterRequester noMsg];
+        }
+        searchTable.pullTableIsLoadingMore = NO;
+    } else if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_REFRESH_SEARCH_HUNTER]){
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            [self.searchArray removeAllObjects];
+            _hunterpage = 2;
+            NSArray *array = [dic valueForKey:@"users"];
+            [self.searchArray addObjectsFromArray:array];
+            _hotView.hidden=YES;
+            _kindView.hidden=YES;
+            searchTable.hidden=NO;
+            [_searchbar resignFirstResponder];
+            
+            [searchTable reloadData];
+            if([self.searchArray count]>0)
+            {
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+                [searchTable scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:NO];
+            }
+        } else if ([dic objectForKey:@"msg"]) {
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        } else {
+            [ghunterRequester noMsg];
+        }
+    }
+    else if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_LOADMORE_SEARCH_HUNTER]){
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            _hunterpage++;
+            
+            NSArray *array = [dic valueForKey:@"users"];
+            [self.searchArray addObjectsFromArray:array];
+            [_searchbar resignFirstResponder];
+            [searchTable reloadData];
+            
+        } else if ([dic objectForKey:@"msg"]) {
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        } else {
+            [ghunterRequester noMsg];
+        }
+        searchTable.pullTableIsLoadingMore = NO;
+    }
+    else if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_REFRESH_SEARCH_SKILL]){
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            [self.searchArray removeAllObjects];
+            _skillpage = 2;
+            NSArray *array = [dic valueForKey:@"skillshows"];
+            [self.searchArray addObjectsFromArray:array];
+            for(NSUInteger i=0;i<self.searchArray.count;i++)
+            {
+                NSDictionary* dic=self.searchArray[i];
+                NSDictionary *owner = [dic objectForKey:@"owner"];
+                NSString* userName=[owner objectForKey:@"uesrname"];
+                if(userName.length==0)
+                {
+                    [self.searchArray removeObject:dic];
+                }
+            }
+            _hotView.hidden=YES;
+            _kindView.hidden=YES;
+            searchTable.hidden=NO;
+            [_searchbar resignFirstResponder];
+            
+            [searchTable reloadData];
+            if([self.searchArray count]>0)
+            {
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+                [searchTable scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:NO];
+            }
+        } else if ([dic objectForKey:@"msg"]) {
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        } else {
+            [ghunterRequester noMsg];
+        }
+    }
+    else if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_LOADMORE_SEARCH_SKILL]){
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            _skillpage++;
+            
+            NSArray *array = [dic valueForKey:@"skillshows"];
+            [self.searchArray addObjectsFromArray:array];
+            for(NSUInteger i=0;i<self.searchArray.count;i++)
+            {
+                NSDictionary* dic=self.searchArray[i];
+                NSDictionary *owner = [dic objectForKey:@"owner"];
+                NSString* userName=[owner objectForKey:@"uesrname"];
+                if(userName.length==0)
+                {
+                    [self.searchArray removeObject:dic];
+                }
+            }
+            [_searchbar resignFirstResponder];
+            [searchTable reloadData];
+            
+        } else if ([dic objectForKey:@"msg"]) {
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        } else {
+            [ghunterRequester noMsg];
+        }
+        searchTable.pullTableIsLoadingMore = NO;
+    }
+
+    else if([[request.userInfo objectForKey:REQUEST_TYPE] isEqual:REQUEST_FOR_HOT])
+    {
+        if(responseCode==200&&[error_number integerValue]==0)
+        {
+            _hotView.hidden=NO;
+            _kindView.hidden=NO;
+            [_hotArr removeAllObjects];
+            NSArray* array=[dic valueForKey:@"keywords"];
+           // NSLog(@"keyWords:%@",array);
+            [_hotArr addObjectsFromArray:array];
+            for(UIButton* btn in _smallView.subviews)
+            {
+                [btn removeFromSuperview];
+            }
+            
+            NSUInteger cnt = 0;
+            for(NSUInteger i = 0;i < 3;i++)
+            {
+                for(NSUInteger j = 0;j < 4;j++)
+                {
+                    if (cnt >= _hotArr.count) {
+                        return;
+                    }
+                    UIButton* btn=[UIButton buttonWithType:UIButtonTypeCustom];
+                    //btn.backgroundColor=[UIColor whiteColor];
+                    [btn setBackgroundImage:[UIImage imageNamed:@"gender_bg"] forState:UIControlStateNormal];
+                    //            [button setFrame:CGRectMake(0+y*(size.width+25), 0+i*(size.height+25), size.width+25, size.height+25)];
+                    [btn setFrame:CGRectMake(10+j*70, 8+i*29, 65, 24)];
+                    btn.layer.cornerRadius=8.0;
+                    btn.tag=i*4+j+30;
+                    [btn addTarget:self action:@selector(btnClick:) forControlEvents:UIControlEventTouchUpInside];
+                    [btn setTitleColor:[UIColor blackColor]forState:UIControlStateNormal];
+                    btn.titleLabel.font=[UIFont systemFontOfSize:12];
+                    [btn setTitleColor:[UIColor darkGrayColor] forState:UIControlStateNormal];
+                    [btn setTitle:_hotArr[btn.tag-30] forState:UIControlStateNormal];
+                    [_smallView addSubview:btn];
+                    cnt++;
+                }
+            }
+        }
+    }
+}
+-(void)requestFailed:(ASIHTTPRequest *)request
+{
+    searchTable.pullTableIsLoadingMore = NO;
+    [ghunterRequester performSelectorOnMainThread:@selector(showTip:) withObject:@"网络连接异常" waitUntilDone:false];
+    //    NSError *error = [request error];
+//    NSLog(@"%@",error);
+
+}
+-(void)btnClick:(UIButton*)btn
+{
+    [_searchbar resignFirstResponder];
+    _searchbar.text=btn.titleLabel.text;
+    if(_taskBtn.selected==YES) {
+        self.taskpage = 1;
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:[NSString stringWithFormat:@"%zd",self.taskpage] forKey:@"page"];
+        [dic setObject:btn.titleLabel.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:URL_SEARCH_TASK withUserInfo:REQUEST_FOR_REFRESH_SEARCH_TASK withDictionary:dic];
+    } else if (_hunterBtn.selected== YES) {
+        self.hunterpage = 1;
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:[NSString stringWithFormat:@"%zd",self.hunterpage] forKey:@"page"];
+        [dic setObject:btn.titleLabel.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:URL_SEARCH_HUNTER withUserInfo:REQUEST_FOR_REFRESH_SEARCH_HUNTER withDictionary:dic];
+    }
+    else if (_skillBtn.selected== YES) {
+        self.skillpage = 1;
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:[NSString stringWithFormat:@"%zd",self.skillpage] forKey:@"page"];
+        [dic setObject:btn.titleLabel.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:URL_SEARCH_SKILL withUserInfo:REQUEST_FOR_REFRESH_SEARCH_SKILL withDictionary:dic];
+    }
+    searchTable.pullTableIsRefreshing = NO;
+}
+#pragma mark - PullTableViewDelegate
+
+- (void)pullTableViewDidTriggerRefresh:(PullTableView *)pullTableView
+{
+    [self performSelector:@selector(refreshTable) withObject:nil afterDelay:0.1f];
+}
+
+- (void)pullTableViewDidTriggerLoadMore:(PullTableView *)pullTableView
+{
+    [self performSelector:@selector(loadMoreDataToTable) withObject:nil afterDelay:0.1f];
+}
+
+#pragma mark - Refresh and load more methods
+
+- (void)refreshTable
+{
+    if([self.searchbar.text length] == 0) {
+        searchTable.pullTableIsRefreshing = NO;
+        
+        return;
+    }
+    if(_taskBtn.selected==YES) {
+        self.taskpage = 1;
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:[NSString stringWithFormat:@"%zd",self.taskpage] forKey:@"page"];
+        [dic setObject:self.searchbar.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:URL_SEARCH_TASK withUserInfo:REQUEST_FOR_REFRESH_SEARCH_TASK withDictionary:dic];
+    } else if (_hunterBtn.selected== YES) {
+        self.hunterpage = 1;
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:[NSString stringWithFormat:@"%zd",self.hunterpage] forKey:@"page"];
+        [dic setObject:self.searchbar.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:URL_SEARCH_HUNTER withUserInfo:REQUEST_FOR_REFRESH_SEARCH_HUNTER withDictionary:dic];
+    }
+    else if (_skillBtn.selected== YES) {
+        self.skillpage = 1;
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:[NSString stringWithFormat:@"%zd",self.skillpage] forKey:@"page"];
+        [dic setObject:self.searchbar.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:URL_SEARCH_SKILL withUserInfo:REQUEST_FOR_REFRESH_SEARCH_SKILL withDictionary:dic];
+    }
+    searchTable.pullTableIsRefreshing = NO;
+}
+
+- (void)loadMoreDataToTable
+{
+    if([self.searchbar.text length] == 0) {
+        searchTable.pullTableIsLoadingMore = NO;
+        return;
+    }
+    if(_taskBtn.selected==YES) {
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:self.searchbar.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:[NSString stringWithFormat:@"%@?page=%zd",URL_SEARCH_TASK,self.taskpage] withUserInfo:REQUEST_FOR_LOADMORE_SEARCH_TASK withDictionary:dic];
+    } else if (_hunterBtn.selected== YES) {
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+       
+        [dic setObject:self.searchbar.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:[NSString stringWithFormat:@"%@?page=%zd",URL_SEARCH_HUNTER,self.hunterpage] withUserInfo:REQUEST_FOR_LOADMORE_SEARCH_HUNTER withDictionary:dic];
+    }
+    else if (_skillBtn.selected== YES) {
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+       
+        [dic setObject:self.searchbar.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:[NSString stringWithFormat:@"%@?page=%zd",URL_SEARCH_SKILL,self.skillpage] withUserInfo:REQUEST_FOR_LOADMORE_SEARCH_SKILL withDictionary:dic];
+    }
+}
+
+#pragma mark - UITextfield Delegate
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [textField resignFirstResponder];
+    if([self.searchbar.text length] == 0) {
+        [ghunterRequester showTip:@"请输入关键字"];
+        [self.searchbar resignFirstResponder];
+        return NO;
+    }
+    if (_taskBtn.selected==YES) {
+        self.taskpage = 1;
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:[NSString stringWithFormat:@"%zd",self.taskpage] forKey:@"page"];
+        [dic setObject:self.searchbar.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:URL_SEARCH_TASK withUserInfo:REQUEST_FOR_REFRESH_SEARCH_TASK withDictionary:dic];
+    } else if (_hunterBtn.selected== YES) {
+        self.hunterpage = 1;
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:[NSString stringWithFormat:@"%zd",self.hunterpage] forKey:@"page"];
+        [dic setObject:self.searchbar.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:URL_SEARCH_HUNTER withUserInfo:REQUEST_FOR_REFRESH_SEARCH_HUNTER withDictionary:dic];
+    }
+    else if (_skillBtn.selected== YES) {
+        self.skillpage = 1;
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[ghunterRequester getUserInfo:LATITUDE] forKey:LATITUDE];
+        [dic setObject:[ghunterRequester getUserInfo:LONGITUDE] forKey:LONGITUDE];
+        [dic setObject:[NSString stringWithFormat:@"%zd",self.skillpage] forKey:@"page"];
+        [dic setObject:self.searchbar.text forKey:@"keyword"];
+        [ghunterRequester postwithDelegate:self withUrl:URL_SEARCH_SKILL withUserInfo:REQUEST_FOR_REFRESH_SEARCH_SKILL withDictionary:dic];
+    }
+    [self.searchbar resignFirstResponder];
+    return YES;
+}
+
+- (IBAction)taskBtn:(UIButton *)sender {
+    _taskBtn.selected=YES;
+    _skillBtn.selected=NO;
+    _hunterBtn.selected=NO;
+    self.searchbar.placeholder = @"任务关键字/分类";
+    [ghunterRequester getwithDelegate:self withUrl:URL_SEARCH_HOT withUserInfo:REQUEST_FOR_HOT withString:[NSString stringWithFormat:@"?api_session_id=%@&latitude=%@&longitude=%@&type=%@",[ghunterRequester getUserInfo:API_SESSION_ID],[ghunterRequester getUserInfo:LATITUDE],[ghunterRequester getUserInfo:LONGITUDE],[NSString stringWithFormat:@"%zd",0]]];
+}
+
+- (IBAction)skillBtn:(UIButton *)sender {
+    _taskBtn.selected=NO;
+    _skillBtn.selected=YES;
+    _hunterBtn.selected=NO;
+    self.searchbar.placeholder=@"技能关键字/分类";
+    [ghunterRequester getwithDelegate:self withUrl:URL_SEARCH_HOT withUserInfo:REQUEST_FOR_HOT withString:[NSString stringWithFormat:@"?api_session_id=%@&latitude=%@&longitude=%@&type=%@",[ghunterRequester getUserInfo:API_SESSION_ID],[ghunterRequester getUserInfo:LATITUDE],[ghunterRequester getUserInfo:LONGITUDE],[NSString stringWithFormat:@"%zd",2]]];
+}
+
+- (IBAction)hunter:(UIButton *)sender {
+    _taskBtn.selected=NO;
+    _skillBtn.selected=NO;
+    _hunterBtn.selected=YES;
+    self.searchbar.placeholder = @"昵称/手机号/技能标签";
+    [ghunterRequester getwithDelegate:self withUrl:URL_SEARCH_HOT withUserInfo:REQUEST_FOR_HOT withString:[NSString stringWithFormat:@"?api_session_id=%@&latitude=%@&longitude=%@&type=%@",[ghunterRequester getUserInfo:API_SESSION_ID],[ghunterRequester getUserInfo:LATITUDE],[ghunterRequester getUserInfo:LONGITUDE],[NSString stringWithFormat:@"%zd",1]]];
+}
+@end

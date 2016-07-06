@@ -1,0 +1,34 @@
+//
+//  ghunterConvertGoldsViewController.h
+//  ghunter
+//
+//  Created by ImGondar on 15/12/24.
+//  Copyright © 2015年 ghunter. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "AFNetworkTool.h"
+#import "Header.h"
+#import "RegexKitLite.h"
+#import "ProgressHUD.h"
+
+@interface ghunterConvertGoldsViewController : UIViewController<UITextFieldDelegate>
+
+@property (strong, nonatomic) IBOutlet UIButton *OneGoldBtn;
+
+@property (strong, nonatomic) IBOutlet UIButton *TwoGoldBtn;
+
+@property (strong, nonatomic) IBOutlet UIButton *ThreeGoldBtn;
+
+// 金币余额
+@property (strong, nonatomic) IBOutlet UILabel *balabnceNum;
+// 账户余额
+@property (strong, nonatomic) IBOutlet UILabel *accountNum;
+
+
+
+@property (strong, nonatomic) IBOutlet UITextField *goldNumTF;
+
+@property (strong, nonatomic) IBOutlet UILabel *payGoldLb;
+
+@end

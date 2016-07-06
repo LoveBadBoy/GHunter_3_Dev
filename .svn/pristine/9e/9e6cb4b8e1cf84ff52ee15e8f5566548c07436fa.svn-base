@@ -1,0 +1,323 @@
+    //
+//  ghunterIdentity2ViewController.m
+//  ghunter
+//
+//  Created by 汪睦雄 on 15/6/10.
+//  Copyright (c) 2015年 ghunter. All rights reserved.
+//
+
+#import "ghunterIdentityViewController.h"
+#import "AFNetworkTool.h"
+#import "SJAvatarBrowser.h"
+#import "ghunterIdentityIntroduceViewController.h"
+#import "SIAlertView.h"
+#import "ZYQAssetPickerController.h"
+
+@interface ghunterIdentityViewController (){
+    NSOperationQueue *_queue;
+}
+
+@property (weak, nonatomic) IBOutlet UIImageView *photoImgView;
+@property (weak, nonatomic) IBOutlet UILabel *statusName;
+@property (weak, nonatomic) IBOutlet UIButton *choosePicBtn;
+// 认证导航
+@property (weak, nonatomic) IBOutlet UILabel *introduceLabel;
+// 提交审核
+@property (weak, nonatomic) IBOutlet UIButton *submitBtn;
+
+@property (weak, nonatomic) IBOutlet UIView *bgArea1;
+@property (weak, nonatomic) IBOutlet UIView *bgArea2;
+
+@property (nonatomic, retain) UIActionSheet *alertAction;
+@property (strong, nonatomic) IBOutlet UIView *bg;
+
+@end
+
+@implementation ghunterIdentityViewController{
+    NSInteger identityStatus;
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+     _bg.backgroundColor = Nav_backgroud;
+    _bgArea1.layer.cornerRadius = 6;
+    _bgArea2.layer.cornerRadius = 6;
+    
+    _choosePicBtn.layer.cornerRadius = 6;
+    _submitBtn.layer.cornerRadius = 6;
+    
+    UITapGestureRecognizer *tap2introduce = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(go2identityIntroduce:)];
+    [self.introduceLabel setUserInteractionEnabled:YES];
+    [self.introduceLabel addGestureRecognizer:tap2introduce];
+    
+    UITapGestureRecognizer *tap2bigImg = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap2viewBigImg:)];
+    [self.photoImgView setUserInteractionEnabled:YES];
+    [self.photoImgView addGestureRecognizer:tap2bigImg];
+    [self.photoImgView.layer setCornerRadius:6];
+    
+    UITapGestureRecognizer *tap2Identity = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(showPictureSelection)];
+    [self.choosePicBtn setUserInteractionEnabled:YES];
+    [self.choosePicBtn addGestureRecognizer:tap2Identity];
+    
+    // 按钮选中后的颜色
+    reChooseColor = [UIColor colorWithRed:205/255.0 green:86/255.0 blue:32/255.0 alpha:1.0];
+    
+    // 提交按钮的动作
+    [self.submitBtn setUserInteractionEnabled:NO];
+    [self.submitBtn addTarget:self action:@selector(alertSubmitPhoto) forControlEvents:UIControlEventTouchUpInside];
+    
+    [AFNetworkTool httpRequestWithUrl:URL_GET_IDENTITY_INDEX params:nil success:^(NSData *data) {
+        NSError *error;
+        id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        if (!error) {
+            // 请求成功，这里得到json数据
+            if ( [[json objectForKey:@"error"] integerValue] == 0 ) {
+                NSDictionary *identity = [json objectForKey:@"identity"];
+                [self.photoImgView sd_setImageWithURL:[identity objectForKey:@"photo_url"] placeholderImage:[UIImage imageNamed:@"identity_step_demo"]];
+                [self.statusName setText:[identity objectForKey:@"status_name"]];
+                
+                identityStatus = [[identity objectForKey:@"status"] integerValue];
+            }else{
+                [ProgressHUD show:[json objectForKey:@"msg"]];
+            }
+        }
+    } fail:^{
+        [ProgressHUD show:HTTPREQUEST_ERROR];
+    }];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    self.tabBarController.tabBar.hidden = YES;
+    
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.navigationBar.alpha = 0;
+    
+    // self.navigationController.navigationBar.alpha = 0;
+    // self.navigationController.navigationBar.hidden = NO;
+    // 这一句是用于隐藏标题栏的
+    [self.navigationController.view sendSubviewToBack:self.navigationController.navigationBar];
+    
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+}
+
+// 返回按钮
+- (IBAction)back:(id)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+// 认证导航按钮
+- (void)go2identityIntroduce:(id)sender {
+    ghunterIdentityIntroduceViewController *view = [[ghunterIdentityIntroduceViewController alloc] init];
+    [self.navigationController pushViewController:view animated:YES];
+}
+
+// 点击查看大图
+- (void)tap2viewBigImg:(id)sender{
+    [SJAvatarBrowser showImage:self.photoImgView];
+}
+
+// 点击拍照或上传图片
+- (void)showPictureSelection {
+    if (identityStatus == 2) {
+        [ProgressHUD show:@"认证正在审核中"];
+        return;
+    }
+    if ( identityStatus == 1 ) {
+        [ProgressHUD show:@"您已通过实名认证"];
+        return;
+    }
+    [self.view endEditing:YES];
+    pictureAlert = [[SIAlertView alloc] initWithTitle:nil andMessage:nil];
+    NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"pictureView" owner:self options:nil];
+    UIView *taskFilter = [[UIView alloc] init];
+    taskFilter = [nibs objectAtIndex:0];
+    [pictureAlert setCornerRadius:8.0];
+    CGRect taskfilterFrame = taskFilter.frame;
+    pictureAlert.containerFrame = CGRectMake((mainScreenWidth - taskfilterFrame.size.width) / 2.0, (mainScreenheight - taskfilterFrame.size.height - 10), taskfilterFrame.size.width, taskfilterFrame.size.height);
+    pictureAlert.showView = taskFilter;
+    UIButton *local = (UIButton *)[taskFilter viewWithTag:1];
+    UIButton *camera = (UIButton *)[taskFilter viewWithTag:2];
+    UIButton *cancel = (UIButton *)[taskFilter viewWithTag:3];
+    [local addTarget:self action:@selector(local_pic) forControlEvents:UIControlEventTouchUpInside];
+    [camera addTarget:self action:@selector(camera_pic) forControlEvents:UIControlEventTouchUpInside];
+    [cancel addTarget:self action:@selector(cancel_pic) forControlEvents:UIControlEventTouchUpInside];
+    pictureAlert.transitionStyle = SIAlertViewTransitionStyleSlideFromBottom;
+    [pictureAlert show];
+}
+
+// 提交认证照片
+-(void)alertSubmitPhoto{
+    if (photoImg == nil) {
+        [ProgressHUD show:@"未选择照片"];
+        return;
+    }
+    if (identityStatus == 1 || identityStatus == 2) {
+        [ProgressHUD show:@"该状态不能提交实名认证"];
+        return;
+    }
+    
+    self.alertAction = [[UIActionSheet alloc] initWithTitle:@"确定提交此照片审核吗?" delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:@"确定" otherButtonTitles:nil];
+    [self.alertAction showInView:self.view];
+}
+
+-(void)didSubmitPhoto{
+    // 提交认证照片
+    NSMutableDictionary *parameters = [[NSMutableDictionary alloc] initWithObjectsAndKeys:API_TOKEN_NUM,@"api_token",[ghunterRequester getUserInfo:API_SESSION_ID],@"api_session_id",nil];
+    NSMutableArray *imgArr = [[NSMutableArray alloc] init];
+    [imgArr addObject:photoImg];
+    
+    [self startLoad];
+    [AFNetworkTool uploadImage:imgArr forKey:@"images[]" andParameters:parameters toApiUrl:URL_POST_IDENTITY_PHOTO success:^(NSData *data) {
+        [self endLoad];
+        
+        NSError *error;
+        id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        if (!error) {
+            // 请求成功，这里得到json数据
+            if ( [[json objectForKey:@"error"] integerValue] == 0 ) {
+                NSDictionary *identity = [json objectForKey:@"identity"];
+                [self.photoImgView sd_setImageWithURL:[identity objectForKey:@"photo_url"] placeholderImage:[UIImage imageNamed:@"identity_step_demo"]];
+                [self.statusName setText:[identity objectForKey:@"status_name"]];
+                
+                identityStatus = [[identity objectForKey:@"status"] integerValue]; // 2
+                
+                [_choosePicBtn setTitle:@"选择照片" forState:UIControlStateNormal];
+                [_choosePicBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                [_choosePicBtn setBackgroundImage:[UIImage imageNamed:@"long_button_bg_normal"] forState:UIControlStateNormal];
+                
+                [_submitBtn setUserInteractionEnabled:NO];
+                // [self.submitBtn setBackgroundImage:[UIImage imageNamed:@"long_button_bg_normal"] forState:UIControlStateNormal];
+                // disabled
+                [self.submitBtn setBackgroundImage:[UIImage imageNamed:@"addcontacts_selected"] forState:UIControlStateNormal];
+            }else{
+                
+            }
+            [ProgressHUD show:[json objectForKey:@"msg"]];
+        }
+    } fail:^{
+        [self endLoad];
+        [ProgressHUD show:HTTPREQUEST_ERROR];
+    }];
+}
+
+- (void)local_pic {
+    [self cancel_pic];
+    [self addPicture:0];
+}
+
+- (void)camera_pic {
+    [self cancel_pic];
+    [self addPicture:1];
+}
+
+- (void)cancel_pic {
+    [pictureAlert dismissAnimated:YES];
+}
+
+- (void)addPicture:(NSInteger)sender {
+    if(sender == 0) {
+        ZYQAssetPickerController *picker = [[ZYQAssetPickerController alloc] init];
+        picker.maximumNumberOfSelection = 1;
+        picker.assetsFilter = [ALAssetsFilter allPhotos];
+        picker.showEmptyGroups=NO;
+        picker.delegate = self;
+        picker.selectionFilter = [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+            if ([[(ALAsset*)evaluatedObject valueForProperty:ALAssetPropertyType] isEqual:ALAssetTypeVideo]) {
+                NSTimeInterval duration = [[(ALAsset*)evaluatedObject valueForProperty:ALAssetPropertyDuration] doubleValue];
+                return duration >= 5;
+            } else {
+                return YES;
+            }
+        }];
+        [self presentViewController:picker animated:YES completion:NULL];
+    } else if (sender == 1) {
+        UIImagePickerController *imgPicker = [[UIImagePickerController alloc] init];
+        [imgPicker setAllowsEditing:YES];
+        [imgPicker setDelegate:self];
+        [imgPicker setSourceType:UIImagePickerControllerSourceTypeCamera];
+        [self.navigationController presentViewController:imgPicker animated:YES completion:nil];
+    }
+}
+
+#pragma mark - ZYQAssetPickerControllerDelegate
+-(void)assetPickerController:(ZYQAssetPickerController *)picker didFinishPickingAssets:(NSArray *)assets{
+    for (NSInteger i = 0; i < assets.count; i++) {
+        ALAsset *asset = assets[i];
+        UIImage *tempImg = [UIImage imageWithCGImage:asset.defaultRepresentation.fullScreenImage];
+        // 从相册得到图片
+        [self.photoImgView setImage:tempImg];
+        photoImg = tempImg;
+        
+        [_submitBtn setUserInteractionEnabled:YES];
+        [self.submitBtn setBackgroundImage:[UIImage imageNamed:@"long_button_bg_normal"] forState:UIControlStateNormal];
+        
+        [_choosePicBtn setTitle:@"重新选择照片" forState:UIControlStateNormal];
+        [_choosePicBtn setTitleColor:reChooseColor forState:UIControlStateNormal];
+        [_choosePicBtn setBackgroundImage:[UIImage imageNamed:@"login_back"] forState:UIControlStateNormal];
+    }
+}
+
+#pragma mark - UIImagePickerDelegate
+// 成功获得相片还是视频后的回调 UIImagePickerController
+-(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    UIImage *image=[info objectForKey:UIImagePickerControllerEditedImage];
+    if (picker.sourceType == UIImagePickerControllerSourceTypeCamera)
+    {
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+    }
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    // 从相机获得照片
+    [self.photoImgView setImage:image];
+    photoImg = image;
+    
+    [_submitBtn setUserInteractionEnabled:YES];
+    [self.submitBtn setBackgroundImage:[UIImage imageNamed:@"long_button_bg_normal"] forState:UIControlStateNormal];
+    // [self.submitBtn setBackgroundImage:[UIImage imageNamed:@"addcontacts_selected"] forState:UIControlStateDisabled];
+    
+    [_choosePicBtn setTitle:@"重新选择照片" forState:UIControlStateNormal];
+    [_choosePicBtn setTitleColor:reChooseColor forState:UIControlStateNormal];
+    [_choosePicBtn setBackgroundImage:[UIImage imageNamed:@"login_back"] forState:UIControlStateNormal];
+}
+
+-(void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+    [picker dismissViewControllerAnimated:YES completion:nil];
+    return;
+}
+
+#pragma mark - Custom Methods
+
+- (void)startLoad{
+    self.loadingView = [[ghunterLoadingView alloc] initWithSuperView:self.view withGif:@"loading2" withIndicator:@"正在加载..."];
+    [self.loadingView startAnimition];
+}
+
+- (void)endLoad{
+    [self.loadingView inValidate];
+    self.loadingView = nil;
+}
+
+#pragma mark - UIActionsheet delegate
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if(buttonIndex == 0) {
+        // 提交照片
+        [self didSubmitPhoto];
+    }
+}
+
+@end

@@ -1,0 +1,369 @@
+//
+//  ghunterRechargeViewController.m
+//  ghunter
+//
+//  Created by chensonglu on 14-5-7.
+//  Copyright (c) 2014年 ghunter. All rights reserved.
+//支付页面-调用支付宝第三方
+
+#import "ghunterRechargeViewController.h"
+#import "DataSigner.h"
+#import "AFNetworkTool.h"
+
+@interface ghunterRechargeViewController ()
+@property (weak, nonatomic) IBOutlet UIView *rechargeBG;
+@property (weak, nonatomic) IBOutlet UILabel *overage;
+@property (strong, nonatomic) IBOutlet UITextField *rechargeCount;
+@property (weak, nonatomic) IBOutlet UIView *payView;
+@property (strong, nonatomic) IBOutlet UIView *weixinView;
+
+@property (strong, nonatomic) IBOutlet UIView *bg;
+
+
+@end
+
+@implementation ghunterRechargeViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+    _indexNum = 0;
+     _bg.backgroundColor = Nav_backgroud;
+    // Do any additional setup after loading the view from its nib.
+//    self.rechargeBG.clipsToBounds = YES;
+//    self.rechargeBG.layer.cornerRadius = Radius;
+//    self.payView.clipsToBounds = YES;
+//    self.payView.layer.cornerRadius = Radius;
+    tradeNum = @"";
+    RadioButton *rb1 = [[RadioButton alloc] initWithGroupId:@"recharge group" index:0 normalImage:[UIImage imageNamed:@"radio_normal"] clickedimage:[UIImage imageNamed:@"define_tag"] isLeft:NO size:CGSizeMake(40, 40) padding:12.0];
+    rb1.frame = CGRectMake(mainScreenWidth - 50,5, 40, 40);
+    [self.payView addSubview:rb1];
+    [rb1 setChecked:YES];
+    [RadioButton addObserverForGroupId:@"recharge group" observer:self];
+    self.rechargeCount.delegate = self;
+    [self.rechargeCount becomeFirstResponder];
+    // _result = @selector(paymentResult:);
+    
+    RadioButton * rb2 = [[RadioButton alloc] initWithGroupId:@"recharge group" index:1 normalImage:[UIImage imageNamed:@"radio_normal"] clickedimage:[UIImage imageNamed:@"define_tag"] isLeft:NO size:CGSizeMake(40, 40) padding:12.0];
+    rb2.frame = CGRectMake(mainScreenWidth - 50, 5, 40, 40);
+    [self.weixinView addSubview:rb2];
+    [rb2 setChecked:NO];
+    [RadioButton addObserverForGroupId:@"recharge group" observer:self];
+    
+    self.commitBtn.layer.cornerRadius = 2.0f;
+    self.commitBtn.clipsToBounds = YES;
+    
+    // 使用全局参数来完成参数记录
+    extern NSString *wx_trade_no;
+    extern NSString *wx_rechargefee;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    self.tabBarController.tabBar.hidden = YES;
+    self.navigationController.navigationBarHidden = YES;
+//    self.navigationController.navigationBar.alpha = 0;
+    [self.navigationController.view sendSubviewToBack:self.navigationController.navigationBar];
+    [ghunterRequester postwithDelegate:self withUrl:URL_GET_MY_ACCOUNT withUserInfo:REQUEST_FOR_MY_ACCOUNT withDictionary:nil];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+//wap回调函数
+//-(void)paymentResult:(NSString *)result
+//{
+//    //结果处理
+//#if ! __has_feature(objc_arc)
+//    AlixPayResult* result = [[[AlixPayResult alloc] initWithString:resultd] autorelease];
+//#else
+//    AlixPayResult* result = [[AlixPayResult alloc] initWithString:resultd];
+//#endif
+//	if (result)
+//    {
+//
+//		if (result.statusCode == 9000)
+//        {
+//			/*
+//			 *用公钥验证签名 严格验证请使用result.resultString与result.signString验签
+//			 */
+//            //交易成功
+//            NSString* key = AlipayPubKey;//签约帐户后获取到的支付宝公钥
+//			id<DataVerifier> verifier;
+//            verifier = CreateRSADataVerifier(key);
+//
+//			if ([verifier verifyString:result.resultString withSign:result.signString])
+//            {
+//                NSLog(@"result:%@",result);
+//                //验证签名成功，交易结果无篡改
+//                NSLog(@"wap,验证签名成功，交易结果无篡改");
+//			}
+//            [ghunterRequester postwithDelegate:self withUrl:URL_GET_MY_ACCOUNT withUserInfo:REQUEST_FOR_MY_ACCOUNT withDictionary:nil];
+//        }
+//        else
+//        {
+//            //交易失败
+//            NSLog(@"wap,交易失败");
+//        }
+//    }
+//    else
+//    {
+//        //失败
+//        NSLog(@"wap,失败");
+//    }
+//
+//}
+
+-(NSString*)getOrderInfo
+{
+    Order *order = [[Order alloc] init];
+    order.partner = PartnerID;
+    order.seller = SellerID;
+    order.tradeNO = [self generateTradeNO]; //订单ID（由商家自行制定）
+    tradeNum = order.tradeNO;
+    order.productName = @"赏金猎人账户充值"; //商品标题
+    order.productDescription = @"赏金猎人账户充值"; //商品描述
+    order.amount = [NSString stringWithFormat:@"%.2f",[[self.rechargeCount text] floatValue]]; //商品价格
+    NSString *ghunterUrl = [URL_REQUEST_ALIBABA stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    NSString *origString = [NSString stringWithFormat:@"%@?%@=%@&%@=%@",ghunterUrl,API_TOKEN,API_TOKEN_NUM,API_SESSION_ID,[ghunterRequester getApi_session_id]];
+    // NSLog(@"Notifyurl = %@", origString);
+    
+    order.notifyURL = origString; //回调URL
+    order.showUrl = [@"http://www.imgondar.com" stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    
+    order.service = @"mobile.securitypay.pay";
+    order.paymentType = @"1";
+    order.inputCharset = @"utf-8";
+    order.itBPay = @"30m";
+    
+    return [order description];
+}
+
+- (NSString *)generateTradeNO
+{
+    const NSInteger N = 15;
+    
+    NSString *sourceString = @"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    NSMutableString *result = [[NSMutableString alloc] init] ;
+    srand(time(0));
+    for (NSInteger i = 0; i < N; i++)
+    {
+        unsigned index = rand() % [sourceString length];
+        NSString *s = [sourceString substringWithRange:NSMakeRange(index, 1)];
+        [result appendString:s];
+    }
+    return result;
+}
+
+-(NSString*)doRsa:(NSString*)orderInfo
+{
+    //获取私钥并将商户信息签名,外部商户可以根据情况存放私钥和签名,只需要遵循RSA签名规范,并将签名字符串base64编码和UrlEncode
+    
+    id<DataSigner> signer = CreateRSADataSigner(PartnerPrivKey);
+    NSString *signedString = [signer signString:orderInfo];
+    
+    return signedString;
+}
+
+-(void)paymentResultDelegate:(NSString *)result
+{
+    NSLog(@"paymentResultDelegate:%@",result);
+}
+
+//http请求处理的代理方法
+-(void)requestFinished:(ASIHTTPRequest *)request
+{
+    int responseCode=[request responseStatusCode];
+    NSError *error;
+    NSData *responseData = [request responseData];
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableLeaves error:&error];
+    NSString *error_number = [dic objectForKey:ERROR];
+    if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_MY_ACCOUNT]){
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            NSDictionary *account = [dic objectForKey:@"account"];
+            [self.overage setText:[NSString stringWithFormat:@"%@",[account objectForKey:@"balance"]]];
+        } else if ([dic objectForKey:@"msg"]) {
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        } else {
+            [ghunterRequester noMsg];
+        }
+    }
+}
+
+-(void)requestFailed:(ASIHTTPRequest *)request
+{
+    [ghunterRequester performSelectorOnMainThread:@selector(showTip:) withObject:@"网络连接异常" waitUntilDone:false];
+    //    NSError *error = [request error];
+//    NSLog(@"%@",error);
+
+}
+
+#pragma mark - UITextfield delegate
+- (BOOL)textFieldShouldReturn:(UITextField *)textField
+{
+    [textField resignFirstResponder];
+    return YES;
+}
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
+{
+    if ([string isMatchedByRegex:@"^[0-9]$"]) {
+        if (range.location == 0 && [string isEqualToString:@"0"]) {
+            return NO;
+        } else {
+            NSString *regex = @"^[1-9][0-9]*$";
+            if([textField.text isMatchedByRegex:regex]) return YES;
+        }
+    } else if ([string isEqualToString:@""]){
+        return YES;
+    } else {
+        return NO;
+    }
+    return YES;
+}
+
+- (IBAction)back:(id)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+
+#pragma mark ---提交 ---
+- (IBAction)confirm:(id)sender {
+    
+    if (_indexNum == 0) {
+        
+        if([[self.rechargeCount text] length] == 0){
+            [ghunterRequester showTip:@"请输入充值金额"];
+            return;
+        }
+        /*
+         *生成订单信息及签名
+         *由于demo的局限性，采用了将私钥放在本地签名的方法，商户可以根据自身情况选择签名方法(为安全起见，在条件允许的前提下，我们推荐从商户服务器获取完整的订单信息)
+         */
+        
+        NSString *appScheme = @"imGondar";
+        NSString* orderInfo = [self getOrderInfo];
+        
+        NSString* signedStr = [self doRsa:orderInfo];
+        
+        //将签名成功字符串格式化为订单字符串,请严格按照该格式
+        NSString *orderString = nil;
+        if (signedStr != nil) {
+            orderString = [NSString stringWithFormat:@"%@&sign=\"%@\"&sign_type=\"%@\"",
+                           orderInfo, signedStr, @"RSA"];
+            [[AlipaySDK defaultService] payOrder:orderString fromScheme:appScheme callback:^(NSDictionary *resultDic) {
+                NSLog(@"payResult = %@",resultDic);
+                // 支付成功的回调
+                
+            }];
+        }else{
+            [ghunterRequester performSelectorOnMainThread:@selector(showTip:) withObject:@"充值失败，请稍后再试" waitUntilDone:false];
+        }
+    }else if (_indexNum == 1) {
+        
+        if([[self.rechargeCount text] length] == 0){
+            [ghunterRequester showTip:@"请输入充值金额"];
+            return;
+        }
+        
+        wx_rechargefee = [self.rechargeCount text];
+        wx_rechargefee =  [NSString stringWithFormat:@"%zd", [wx_rechargefee intValue]*100];
+        
+        payRequsestHandler *req = [[payRequsestHandler alloc] init];
+        //初始化支付签名对象
+        [req init:APP_ID mch_id:MCH_ID];
+        //设置密钥
+        [req setKey:PARTNER_ID];
+        
+        //获取到实际调起微信支付的参数后，在app端调起支付
+        NSMutableDictionary *dict = [req sendPay_with_orderprice:wx_rechargefee];
+        
+        if(dict == nil){
+            //错误提示
+            NSString *debug = [req getDebugifo];
+            [self alert:@"提示信息" msg:debug];
+        }else{
+            wx_trade_no = [dict objectForKey:@"out_trade_no"];
+            
+            NSMutableString *stamp  = [dict objectForKey:@"timestamp"];
+            
+            //调起微信支付
+            PayReq* req             = [[PayReq alloc] init];
+            req.openID              = [dict objectForKey:@"appid"];
+            req.partnerId           = [dict objectForKey:@"partnerid"];
+            req.prepayId            = [dict objectForKey:@"prepayid"];
+            req.nonceStr            = [dict objectForKey:@"noncestr"];
+            req.timeStamp           = stamp.intValue;
+            req.package             = [dict objectForKey:@"package"];
+            req.sign                = [dict objectForKey:@"sign"];
+            
+            //向微信注册
+            [WXApi registerApp:APP_ID withDescription:@"ImGondar 2.0"];
+            [WXApi sendReq:req];
+        }
+    }
+}
+
+
+// 微信充值
+- (IBAction)wxrecharge:(id)sender {
+}
+
+-(void)onResp:(BaseResp*)resp{
+    if ([resp isKindOfClass:[PayResp class]]){
+        PayResp*response=(PayResp*)resp;
+        if (response.errCode == WXSuccess) {
+            //服务器端查询支付通知或查询API返回的结果再提示成功
+            
+            NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+            [params setObject:wx_trade_no forKey:@"out_trade_no"];
+            [params setObject:wx_rechargefee forKey:@"total_fee"];
+            [AFNetworkTool httpPostWithUrl:URL_POST_WXPAYRESULT andParameters:params success:^(NSData *data) {
+                NSError *error;
+                NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+                if ([[result objectForKey:@"error"]integerValue] == 0) {
+                    [ProgressHUD show:@"充值成功"];
+                }else{
+                    [ProgressHUD show:[result objectForKey:@"msg"]];
+                }
+            } fail:^{
+                [ProgressHUD show:HTTPREQUEST_ERROR];
+            }];
+        }else if(response.errCode == WXErrCodeUserCancel){
+            // NSLog(@"取消充值，errcode=%d",resp.errCode);
+            [ProgressHUD show:@"取消充值"];
+        }else{
+            // NSLog(@"支付失败，errcode=%d",resp.errCode);
+            [ProgressHUD show:@"支付失败"];
+        }
+    }
+}
+
+//客户端提示信息
+- (void)alert:(NSString *)title msg:(NSString *)msg
+{
+    UIAlertView *alter = [[UIAlertView alloc] initWithTitle:title message:msg delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil];
+    
+    [alter show];
+}
+
+
+#pragma RadioButton delegate
+-(void)radioButtonSelectedAtIndex:(NSUInteger)index inGroup:(NSString *)groupId{
+//     NSLog(@"index:%zd",index);
+    _indexNum = index;
+}
+@end

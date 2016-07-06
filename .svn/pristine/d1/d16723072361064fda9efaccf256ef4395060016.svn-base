@@ -1,0 +1,233 @@
+//
+//  ghuntermyAccountViewController.m
+//  ghunter
+//
+//  Created by chensonglu on 14-5-19.
+//  Copyright (c) 2014年 ghunter. All rights reserved.
+//我的金库-充值提现
+
+#import "ghuntermyAccountViewController.h"
+
+@interface ghuntermyAccountViewController ()<UIScrollViewDelegate>
+@property (strong, nonatomic) IBOutlet UILabel *balance;
+@property (strong, nonatomic) IBOutlet UILabel *reward;
+@property (weak, nonatomic) IBOutlet UILabel *payout;
+@property (strong, nonatomic) IBOutlet UILabel *recharge;
+@property (strong, nonatomic) IBOutlet UILabel *withdrawal;
+@property (weak, nonatomic) IBOutlet UIView *accountBG;
+@property (strong, nonatomic) IBOutlet UIButton *exchangeBt;
+@property (weak, nonatomic) IBOutlet UIButton *rechargeBt;
+@property (weak, nonatomic) IBOutlet UIButton *withdraw;
+
+@property (strong, nonatomic) IBOutlet UIView *bg;
+
+//
+@property (strong, nonatomic) IBOutlet UIScrollView *backGScroll;
+@property (strong, nonatomic) IBOutlet UIView *balanceView;
+
+// 金币商城
+- (IBAction)goldCoinBtnClick:(id)sender;
+
+// 兑换
+- (IBAction)convertGold:(id)sender;
+
+
+
+@end
+
+@implementation ghuntermyAccountViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+     _bg.backgroundColor = Nav_backgroud;
+    // Do any additional setup after loading the view from its nib.
+    self.accountBG.clipsToBounds = YES;
+//    self.accountBG.layer.cornerRadius = Radius;
+//    self.rechargeBt.clipsToBounds = YES;
+    self.exchangeBt.layer.cornerRadius = 2;
+    self.rechargeBt.layer.cornerRadius = 2;
+//    self.withdraw.clipsToBounds = YES;
+//    self.withdraw.layer.cornerRadius = Radius;
+    
+    [self.withdraw.layer setBorderWidth:1.0f];
+    [self.withdraw.layer setBorderColor:RGBCOLOR(235, 235, 235).CGColor];
+    self.withdraw.layer.cornerRadius = 2;
+    self.withdraw.clipsToBounds = YES;
+    
+    [self.goldCoin.layer setBorderWidth:1.0f];
+    [self.goldCoin.layer setBorderColor:RGBCOLOR(235, 235, 235).CGColor];
+    self.goldCoin.layer.cornerRadius = 2;
+    self.goldCoin.clipsToBounds = YES;
+    
+    self.backGScroll.contentSize = CGSizeMake(0, self.backGScroll.frame.size.height + 44);
+    self.backGScroll.delegate = self;
+    self.backGScroll.showsHorizontalScrollIndicator = NO;
+    self.backGScroll.showsVerticalScrollIndicator = NO;
+    
+    self.balanceView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.balanceView.frame.size.height);
+    self.accountBG.frame = CGRectMake(0, self.balanceView.frame.origin.y + self.balanceView.frame.size.height + 10, self.view.frame.size.width, self.accountBG.frame.size.height);
+    self.rechargeBt.frame = CGRectMake(self.view.frame.size.width - 10 -  self.rechargeBt.frame.size.width, 11, self.rechargeBt.frame.size.width, self.rechargeBt.frame.size.height);
+    self.withdraw.frame = CGRectMake(self.view.frame.size.width - 10 - self.rechargeBt.frame.size.width - 10 - self.withdraw.frame.size.width,11, self.withdraw.frame.size.width, self.withdraw.frame.size.height);
+    self.goldBalanceView.frame = CGRectMake(0, self.accountBG.frame.size.height + self.accountBG.frame.origin.y + 10, self.view.frame.size.width, 66);
+    
+
+    [self.balanceView addSubview:self.rechargeBt];
+    [self.balanceView addSubview:self.withdraw];
+    [self.backGScroll addSubview:self.balanceView];
+    [self.backGScroll addSubview:self.accountBG];
+    [self.backGScroll addSubview:self.goldBalanceView];
+    [self.view addSubview:self.backGScroll];
+    
+    [self didGetGoldNumDataIsloading:NO];
+}
+
+- (void)viewWillAppear:(BOOL)animated{
+    self.tabBarController.tabBar.hidden = YES;
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.navigationBar.alpha = 0;
+    [self.navigationController.view sendSubviewToBack:self.navigationController.navigationBar];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+    [ghunterRequester postwithDelegate:self withUrl:URL_GET_MY_ACCOUNT withUserInfo:REQUEST_FOR_MY_ACCOUNT withDictionary:nil];
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+//http请求处理的代理方法
+-(void)requestFinished:(ASIHTTPRequest *)request
+{
+    int responseCode=[request responseStatusCode];
+    NSError *error;
+    NSData *responseData = [request responseData];
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableLeaves error:&error];
+    NSString *error_number = [dic objectForKey:ERROR];
+    if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_MY_ACCOUNT]){
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            NSDictionary *account = [dic objectForKey:@"account"];
+            [self.balance setText:[NSString stringWithFormat:@"￥%@",[account objectForKey:@"balance"]]];
+            [self.reward setText:[NSString stringWithFormat:@"￥%@",[account objectForKey:@"reward"]]];
+            [self.payout setText:[NSString stringWithFormat:@"￥%@",[account objectForKey:@"payout"]]];
+            [self.recharge setText:[NSString stringWithFormat:@"￥%@",[account objectForKey:@"allrecharge"]]];
+            [self.withdrawal setText:[NSString stringWithFormat:@"￥%@",[account objectForKey:@"allwithdraw"]]];
+        }else if ([dic objectForKey:@"msg"]){
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        }else{
+            [ghunterRequester noMsg];
+        }
+    }
+}
+
+-(void)requestFailed:(ASIHTTPRequest *)request
+{
+    [ghunterRequester performSelectorOnMainThread:@selector(showTip:) withObject:@"网络连接异常" waitUntilDone:false];
+    //    NSError *error = [request error];
+
+}
+
+// 获取金币数据
+-(void)didGetGoldNumDataIsloading:(BOOL )isloading{
+    
+    [AFNetworkTool httpRequestWithUrl:URL_GET_MY_CENTER params:nil success:^(NSData *data) {
+        
+        NSError *error;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        if ([[result objectForKey:@"error"]integerValue] == 0) {
+            
+            NSMutableDictionary * dict = [[NSMutableDictionary alloc] init];
+            dict = [result objectForKey:@"user"];
+            self.balabnceGold.text = [dict objectForKey:@"coin_balance"];
+        }
+    } fail:^{
+        
+    }];
+}
+
+- (IBAction)back:(id)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (IBAction)torecharge:(id)sender {
+    ghunterRechargeViewController *ghunterRecharge = [[ghunterRechargeViewController alloc] init];
+    [self.navigationController pushViewController:ghunterRecharge animated:YES];
+}
+
+- (IBAction)towithdraw:(id)sender {
+    //    判断是否实名注册，若没有，提示需要实名注册才能提现
+    NSUserDefaults *user = [NSUserDefaults standardUserDefaults];
+    NSString *isidentity = [ user objectForKey:@"identityStatus"];
+    // 实名认证成功才可以申请提现
+    if ([isidentity isEqualToString:@"1"]) {
+        ghunterWithDrawViewController *withdraw = [[ghunterWithDrawViewController alloc] init];
+        withdraw.balanceStr = [self.balance.text substringFromIndex:1];
+        [self.navigationController pushViewController:withdraw animated:YES];
+    }else {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"提现需知" message:@"提现之前需要先进行实名认证" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:nil];
+        [alert addButtonWithTitle:@"立即前往认证"];
+        [alert show];
+    }
+}
+
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
+    if (buttonIndex == 1) {
+        ghunterIdentityViewController *identityVC = [[ghunterIdentityViewController alloc] init];
+        [self.navigationController pushViewController:identityVC animated:YES];
+    }
+}
+
+- (IBAction)rechargehistory:(id)sender {
+    ghunterMyGoldViewController *history = [[ghunterMyGoldViewController alloc] init];
+    history.type = 0;
+    [self.navigationController pushViewController:history animated:YES];
+}
+
+- (IBAction)withdrawalhistory:(id)sender {
+    ghunterMyGoldViewController *history = [[ghunterMyGoldViewController alloc] init];
+    history.type = 1;
+    [self.navigationController pushViewController:history animated:YES];
+}
+
+
+
+// 金币商城
+- (IBAction)goldCoinBtnClick:(id)sender {
+
+    [AFNetworkTool httpRequestWithUrl:URL_COINSHOP_LOGIN params:nil success:^(NSData *data) {
+        NSError *error;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        if ([[result objectForKey:@"error"]integerValue] == 0) {
+            NSString *loginurl = [result objectForKey:@"url"];
+            CreditWebViewController *web = [[CreditWebViewController alloc]initWithUrlByPresent:loginurl];
+            CreditNavigationController *nav = [[CreditNavigationController alloc]initWithRootViewController:web];
+            [nav setNavColorStyle:[UIColor colorWithRed:234/255.0 green:85/255.0 blue:20/255.0 alpha:1]];
+            [self presentViewController:nav animated:YES completion:nil];
+        }else{
+            [ProgressHUD show:[result objectForKey:@"msg"]];
+        }
+    } fail:^{
+        [ProgressHUD show:HTTPREQUEST_ERROR];
+    }];
+
+}
+
+// 兑换
+- (IBAction)convertGold:(id)sender {
+    
+    ghunterConvertGoldsViewController * convertVC = [[ghunterConvertGoldsViewController alloc] init];
+    [self.navigationController pushViewController:convertVC animated:YES];
+}
+@end

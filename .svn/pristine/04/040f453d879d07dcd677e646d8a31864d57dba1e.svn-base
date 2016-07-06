@@ -1,0 +1,679 @@
+//
+//  Header.h
+//  ghunter
+//
+//  Created by Wangmuxiong on 14-3-6.
+//  Copyright (c) 2014年 ghunter. All rights reserved.
+//
+
+#ifndef ghunter_Header_h
+#define ghunter_Header_h
+//CONSTANTS***********************************************//
+#define API_TOKEN_NUM       @"f7b3a8c405dd23d"
+#define BMap_key            @"0Hnoao7p0w0mhGZRTRaLcS9C"
+#define UMKey               @"536b1df156240bb2de02f83c"
+#define VERSION             @"3.0"
+#define VERSION_TAG         @"13"
+#define NULLSAFE_ENABLED    0
+
+#define DEVICE              @"2"
+#define VERSION_VALUE       @"ios30"
+#define VERSION_KEY         @"iosversion"
+
+#define UMENG_APPKEY        @"550fcd8efd98c57278000cf7"
+#define WX_APPID            @"wxf9521c6c2f2cb216"
+#define WX_APPSECRET        @"ce3b4157772daf4d934655ebc0a741a9"  // @"10edc4d9acd2c700a5ca5edb1b277a63"
+#define TX_APPID            @"101072072"   // 腾讯qqappid
+#define TX_APPSECRET        @"2b1e3168058efe096f729ae62bdfa50b"   //腾讯qq appsecret
+
+#define URL_IMGONDAR        @"http://imGondar.com"
+#define APP_NAME            @"赏金猎人"
+
+#define ARC4RANDOM_MAX      0x100000000
+
+// 全局变量，全局未读消息数目
+NSInteger gunread_notice;
+NSString *gunread_signreward;
+NSInteger gunread_message;
+NSString *gunread_feedavatar;
+BOOL imgondar_islogin;
+
+// 微信充值
+NSString *wx_rechargefee;
+NSString *wx_trade_no;
+
+// 是否启动了应用
+BOOL ghunter_appforeground;
+
+// 记录当前是否在聊天页面
+BOOL ghunter_onchatpage;
+NSInteger ghunter_chatuid;
+
+//是否请求过通知列表，和，私信列表
+BOOL messageRequested;
+BOOL noticeRequested;
+
+//web url
+//赏金猎人贴吧
+#define TIEBA               @"http://tieba.baidu.com/f?kw=%C9%CD%BD%F0%C1%D4%C8%CBimgondar&fr=index"
+//用户使用协议
+#define AGREEMENT           @"http://mob.imgondar.com/site/agreement?from=client"
+//限免通告
+#define FREENOTICE          @"http://mob.imgondar.com/site/freenotice?from=client"
+//交易规则
+#define TRADINGRULES        @"http://mob.imgondar.com/site/pay?from=client"
+//常见问题
+#define ABOUT_QUESTIONS     @"http://mob.imgondar.com/site/question?from=client"
+//使用帮助
+#define USINGHELP           @"http://mob.imgondar.com/site/help?from=client"
+//新闻通告
+#define NEWSLETTER          @"http://mob.imGondar.com/news/article?from=client"
+//身份认证
+#define IDENTITY            @"http://mob.imGondar.com/site/identity?from=client"
+//升级规则
+#define LEVELUPRULES        @"http://mob.imGondar.com/site/levelinfo?from=client"
+//人人
+#define RENREN              @"http://www.renren.com/601894802"
+//新浪微博
+#define WEIBO               @"http://weibo.com/imGondar"
+//官方网站
+#define OFFICIAL            @"http://imgondar.com/"
+//微信公众号
+#define WEIXIN              @"imGondar"
+// 分享的默认图片
+#define DEFAULT_SHARE_IMAGE @"http://mob.imGondar.com/images/appshare.png"
+
+//REQUEST_TYPE********************************************//
+#define REQUEST_TYPE                                @"request_type"
+//
+//#define REQUEST_STATUS                              @"request_status"
+#define REQUEST_FOR_LOGIN                           @"request_for_login"
+#define REQUEST_FOR_REGISTER                        @"request_for_register"
+#define REQUEST_FOR_CAPTCHA                         @"request_for_captcha"
+#define REQUEST_FOR_CHECK_CAPTCHA                   @"request_for_check_captcha"
+#define REQUEST_FOR_FINDPASSWORD_CAPTCHA            @"request_for_findpassword_captcha"
+#define REQUEST_FOR_FINDPASSWORD_CHECK_CAPTCHA      @"request_for_findpassword_check_captcha"
+#define REQUEST_FOR_RESET_PASSWORD                  @"request_for_reset_password"
+#define REQUEST_FOR_LOGOUT                          @"request_for_logout"
+#define REQUEST_FOR_FEEDBACK                        @"request_for_feedback"
+#define REQUEST_FOR_CHECKNEWVERSION                 @"request_for_checknewversion"
+#define REQUEST_FOR_REFRESH_TASK                    @"request_for_refresh_task"
+#define REQUEST_FOR_LOADMORE_TASK                   @"request_for_loadmore_task"
+#define REQUEST_FOR_REFRESH_HUNTERS                 @"request_for_refresh_hunters"
+#define REQUEST_FOR_LOADMORE_HUNTERS                @"request_for_loadmore_hunters"
+
+#define REQUEST_FOR_REFRESH_SKILL                   @"request_for_refresh_skill"
+#define REQUEST_FOR_LOADMORE_SKILL                  @"request_for_loadmore_skill"
+#define REQUEST_FOR_REFRESH_SKILL_COMMENT            @"request_for_get_skill_comment"
+
+#define REQUEST_FOR_TASK_CATALOG                    @"request_for_task_catalog"
+#define REQUEST_FOR_SKILL_CATALOG                   @"request_for_skill_catalog"
+#define REQUEST_FOR_REFRESH_SEARCH_TASK             @"request_for_refresh_search_task"
+#define REQUEST_FOR_LOADMORE_SEARCH_TASK            @"request_for_loadmore_search_task"
+#define REQUEST_FOR_REFRESH_SEARCH_HUNTER           @"request_for_refresh_search_hunter"
+#define REQUEST_FOR_LOADMORE_SEARCH_HUNTER          @"request_for_loadmore_search_hunter"
+#define REQUEST_FOR_REFRESH_SEARCH_SKILL            @"request_for_refresh_search_skill"
+#define REQUEST_FOR_LOADMORE_SEARCH_SKILL           @"request_for_loadmore_search_skill"
+#define REQUEST_FOR_HOT                             @"request_for_hot"
+
+
+#define REQUEST_FOR_GET_SKILL_TAG                   @"request_for_get_skill_tag"
+#define REQUEST_FOR_CREATE_TASK                     @"request_for_create_task"
+#define REQUEST_FOR_CREATE_SKILL                    @"request_for_create_skill"
+#define REQUEST_FOR_BUY_SKILL                       @"request_for_buy_skill"
+#define REQUEST_FOR_REFRESH_TASK_HOT                @"request_for_refresh_task_hot"
+#define REQUEST_FOR_REFRESH_TASK_INTRESTED          @"request_for_refresh_task_intrested"
+#define REQUEST_FOR_LOADMORE_TASK_INTRESTED         @"request_for_loadmore_task_intrested"
+#define REQUEST_FOR_GET_TASK_DETAIL                 @"request_for_get_task_detail"
+#define REQUEST_FOR_REFRESH_TASK_COMMENT            @"request_for_get_task_comment"
+#define REQUEST_FOR_LOADMORE_TASK_COMMENT           @"request_for_loadmore_task_comment"
+#define REQUEST_FOR_POST_COMMENT                    @"request_for_post_comment"
+#define REQUEST_FOR_ADD_COLLECTION                  @"request_for_add_collection"
+#define REQUEST_FOR_DELETE_COLLECTION               @"request_for_delete_collection"
+#define REQUEST_FOR_REFRESH_COLLECTION              @"request_for_refresh_collection"
+#define REQUEST_FOR_LOADMORE_COLLECTION             @"request_for_loadmore_collection"
+#define REQUEST_FOR_JOIN_TASK                       @"request_for_join_task"
+#define REQUEST_FOR_UNJOIN_TASK                     @"request_for_unjoin_task"
+#define REQUEST_FOR_JOINEDHUNTERS                   @"request_for_joinedhunters"
+#define REQUEST_FOR_SELECT_HUNTER                   @"request_for_select_hunter"
+#define REQUEST_FOR_EDIT_TASK                       @"request_for_edit_task"
+#define REQUEST_FOR_MY_ACCOUNT                      @"request_for_my_account"
+#define REQUEST_FOR_REFRESH_MY_TASK_BIDDING         @"request_for_refresh_my_task_bidding"
+#define REQUEST_FOR_LOADMORE_MY_TASK_BIDDING        @"request_for_loadmore_my_task_bidding"
+#define REQUEST_FOR_REFRESH_MY_TASK_WITHDRAWED      @"request_for_refresh_my_task_withdrawed"
+#define REQUEST_FOR_LOADMORE_MY_TASK_WITHDRAWED     @"request_for_loadmore_my_task_withdrawed"
+//#define REQUEST_FOR_REFRESH_MY_TASK_UNDONE          @"request_for_refresh_my_task_undone"
+//#define REQUEST_FOR_LOADMORE_MY_TASK_UNDONE         @"request_for_loadmore_my_task_undone"
+#define REQUEST_FOR_REFRESH_MY_TASK_DONE            @"request_for_refresh_my_task_done"
+#define REQUEST_FOR_LOADMORE_MY_TASK_DONE           @"request_for_loadmore_my_task_done"
+#define REQUEST_FOR_REFRESH_MY_RELEASE              @"request_for_refresh_my_release"
+#define REQUEST_FOR_LOADMORE_MY_RELEASE             @"request_for_loadmore_my_release"
+#define REQUEST_FOR_MODIFY_PROFILE                  @"request_for_modify_profile"
+#define REQUEST_FOR_BACK_DOING                      @"request_for_back_doing"
+#define REQUEST_FOR_BACK_BIDDING                    @"request_for_back_bidding"
+#define REQUEST_FOR_REPORT                          @"request_for_report"
+#define REQUEST_FOR_CONFIRM_PAYMENT                 @"request_for_confirm_payment"
+#define REQUEST_FOR_MODIFY_PASSWORD                 @"request_for_modify_password"
+#define REQUEST_FOR_BACK_DOING                      @"request_for_back_doing"
+#define REQUEST_FOR_HANDLE_WITHDRAW                 @"request_for_handle_withdraw"
+#define REQUEST_FOR_HUNTER_COMMENT                  @"request_for_hunter_comment"
+#define REQUEST_FOR_SHOW_TASK_COMMENT               @"request_for_show_task_comment"
+#define REQUEST_FOR_GET_USER_CENTER                 @"request_for_get_user_center"
+#define REQUEST_FOR_GET_USER_NEWS                   @"request_for_get_user_news"
+#define REQUEST_FOR_GET_USER_FOLLOWS                @"request_for_get_user_follows"
+#define REQUEST_FOR_LOADMORE_USER_FOLLOWS           @"request_for_loadmore_user_follows"
+#define REQUEST_FOR_GET_USER_EVALUATIONS            @"request_for_get_user_evaluations"
+#define REQUEST_FOR_GET_USER_OWN_EVALUATIONS        @"request_for_get_user_own_evaluations"
+#define REQUEST_FOR_LOADMORE_USER_EVALUATIONS       @"request_for_loadmore_user_evaluations"
+#define REQUEST_FOR_LOADMORE_USER_OWN_EVALUATIONS   @"request_for_loadmore_user_own_evaluations"
+#define REQUEST_FOR_GET_MY_CENTER                   @"request_for_get_my_center"
+#define REQUEST_FOR_USER_SKILL                      @"request_for_user_skill"
+#define REQUEST_FOR_USER_SKILLSHOW                  @"request_for_user_skillshow"
+#define REQUEST_FOR_LOADMORE_SKILLSHOW              @"request_for_loadmore_skillshow"
+#define REQUEST_FOR_CHANGE_PHONE                    @"request_for_change_phone"
+#define REQUEST_FOR_ADD_SKILLS                      @"request_for_add_skills"
+#define REQUEST_FOR_GET_MY_FOLLOW                   @"request_for_get_my_follow"
+#define REQUEST_FOR_LOADMORE_MY_FOLLOW              @"request_for_loadmore_my_follow"
+#define REQUEST_FOR_GET_MY_FRIEND                   @"request_for_get_my_friend"
+#define REQUEST_FOR_LOADMORE_MY_FRIEND              @"request_for_loadmore_friend"
+#define REQUEST_FOR_GET_HUNTER_FANS                 @"request_for_get_hunter_fans"
+#define REQUEST_FOR_LOADMORE_HUNTER_FANS            @"request_for_loadmore_hunter_fans"
+#define REQUEST_FOR_GET_HUNTER_FOLLOW               @"request_for_get_hunter_follow"
+#define REQUEST_FOR_LOADMORE_HUNTER_FOLLOW          @"request_for_loadmore_hunter_follow"
+#define REQUEST_FOR_GET_HUNTERCIRCLE                @"request_for_get_hunter_circle"
+#define REQUEST_FOR_LOADMORE_HUNTERCIRCLE           @"request_for_loadmore_huntercircle"
+#define REQUEST_FOR_GET_RECHARGE_HISTORY            @"request_for_get_recharge_history"
+#define REQUEST_FOR_LOADMORE_RECHARGE_HISTORY       @"request_for_loadmore_recharge_history"
+#define REQUEST_FOR_GET_WITHDRAW_HISTORY            @"request_for_get_withdraw_history"
+#define REQUEST_FOR_LOADMORE_WITHDRAW_HISTORY       @"request_for_loadmore_withdraw_history"
+#define REQUEST_FOR_USER_ACCOUNT_WITHDRAW           @"request_for_user_account_withdraw"
+#define REQUEST_FOR_HUNTER_LEVEL                    @"request_for_hunter_level"
+#define REQUEST_FOR_GET_TASK_NOTICE                 @"request_for_get_task_notice"
+#define REQUEST_FOR_LOADMORE_TASK_NOTICE            @"request_for_loadmore_task_notice"
+#define REQUEST_FOR_DELETE_TASK_NOTICE              @"request_for_delete_task_notice"
+#define REQUEST_FOR_GET_MESSAGE_NOTICE              @"request_for_get_message_notice"
+#define REQUEST_FOR_LOADMORE_MESSAGE_NOTICE         @"request_for_loadmore_message_notice"
+#define REQUEST_FOR_DELETE_MESSAGE_NOTICE           @"request_for_delete_message_notice"
+#define REQUEST_FOR_GET_NOTICE_LIST                 @"request_for_get_notice_list"
+#define REQUEST_FOR_LOADMORE_NOTICE_NOTICE          @"request_for_loadmore_notice_notice"
+#define REQUEST_FOR_GET_ALIE_NOTICE                 @"request_for_get_alie_notice"
+#define REQUEST_FOR_LOADMORE_ALIE_NOTICE            @"request_for_loadmore_alie_notice"
+#define REQUEST_FOR_HANDLE_TASK_NOTICE              @"request_for_handle_task_notice"
+#define REQUEST_FOR_HANDLE_MESSAGE_NOTICE           @"request_for_handle_message_notice"
+#define REQUEST_FOR_GET_NOTICE_NUMBER               @"request_for_get_notice_number"
+#define REQUEST_FOR_GET_UNDEAL_NOTICE_NUMBER        @"request_for_get_undeal_notice_number"
+#define REQUEST_FOR_GET_CHAT_HISTORY                @"request_for_get_chat_history"
+#define REQUEST_FOR_LOADMORE_CHAT_HISTORY           @"request_for_loadmore_chat_history"
+#define REQUEST_FOR_SEND_CHAT                       @"request_for_send_chat"
+#define REQUEST_FOR_ADD_SKILLSHOW                   @"request_for_skill_show"
+#define REQUEST_FOR_GET_ACTIVITY                    @"request_for_get_activity"
+#define REQUEST_FOR_FOLLOW_HUNTER                   @"request_for_follow_hunter"
+#define REQUEST_FOR_UNFOLLOW_HUNTER                 @"request_for_unfollow_hunter"
+#define REQUEST_FOR_DEAL_UNREAD_TASK                @"request_for_deal_unread_task"
+#define REQUEST_FOR_DEAL_UNREAD_MESSAGE             @"request_for_deal_unread_message"
+#define REQUEST_FOR_DEAL_UNREAD_NOTICE              @"request_for_deal_unread_notice"
+#define REQUEST_FOR_GET_ACTIVITY_REWARD             @"request_for_get_activity_reward"
+#define REQUEST_FOR_LEAVE_FEE                       @"request_for_leave_fee"
+#define REQUEST_FOR_DELETE_SKILL_SHOW               @"request_for_delete_skill_show"
+#define REQUEST_FOR_MODIFY_SKILL_SHOW               @"request_for_modify_skill_show"
+#define REQUEST_FOR_DELETE_COMMENT                  @"request_for_delete_comment"
+#define REQUEST_FOR_UPDATE_SKILL_SHOW               @"request_for_update_skill_show"
+#define REQUEST_FOR_GET_SKILL_CONTENT               @"request_for_get_skill_content"
+#define REQUEST_FOR_NEW_ADD_COLLECTION              @"request_for_add_collection"
+#define REQUEST_FOR_NEW_DELETE_COLLECTION           @"request_for_delete_collection"
+#define REQUEST_FOR_CHANGE_SKILL                    @"requset_for_change_skill"
+#define REQUEST_FOR_GET_BANNER                      @"request_for_get_banner"
+#define REQUEST_FOR_CHACKIN                         @"request_for_chackin"
+#define REQUEST_FOR_MARKALL_NOTICE                  @"request_for_markall_notice"
+#define REQUEST_FOR_CLEANALL_NOTICE                 @"request_for_cleanall_notice"
+#define REQUEST_FOR_MARKALL_NOTICE_ALIE             @"request_for_markall_notice_alie"
+#define REQUEST_FOR_CLEANALL_NOTICE_ALIE            @"request_for_cleanall_notice_alie"
+#define REQUEST_FOR_SKILL_DETAILCOMMENT             @"request_for_skill_detailcomment"
+
+// 我的参与
+#define REQUEST_FOR_REFRESH_MY_TASK_DOING           @"request_for_refresh_my_task_doing"
+#define REQUEST_FOR_REFRESH_MY_TASK_ORIENT_PRIVATE_WAITING     @"request_for_refresh_my_task_request_for_refresh_my_task_withdrawed"
+#define REQUEST_FOR_REFRESH_MY_TASK_UNVALUATION     @"request_for_refresh_my_task_unValuation"
+#define REQUEST_FOR_REFRESH_MY_TASK_APPLY_WITHDRAW  @"request_for_refresh_my_task_apply_withdraw"
+
+#define REQUEST_FOR_LOADMORE_MY_TASK_DOING          @"request_for_loadmore_my_task_doing"
+#define REQUEST_FOR_LOADMORE_MY_TASK_ORIENT_PRIVATE_WAITING    @"request_for_loadmore_my_task_undonAccept"
+#define REQUEST_FOR_LOADMORE_MY_TASK_UNVALUATION    @"request_for_loadmore_my_task_unValuation"
+#define REQUEST_FOR_LOADMORE_MY_TASK_APPLY_WITHDRAW @"request_for_loadmore_my_task_apply_withdraw"
+
+// 我的发布
+#define REQUEST_FOR_REFRESH_MY_RELEASE_BIDDING      @"request_for_refresh_my_release_bidding"
+#define REQUEST_FOR_REFRESH_MY_RELEASE_DOING        @"request_for_refresh_my_release_doing"
+#define REQUEST_FOR_REFRESH_MY_RELEASE_ORIENT_PRIVATE_WAITING  @"request_for_refresh_my_release_orient_private_waiting"
+#define REQUEST_FOR_REFRESH_MY_RELEASE_OVERDATE     @"request_for_refresh_my_release_overdate"
+#define REQUEST_FOR_REFRESH_MY_RELEASE_DONE         @"request_for_refresh_my_release_done"
+#define REQUEST_FOR_REFRESH_MY_RELEASE_WITHDRAWED        @"request_for_refresh_my_release_withdrawed"
+#define REQUEST_FOR_REFRESH_MY_RELEASE_APPLY_WITHDRAW  @"request_for_refresh_my_release_apply_withdraw"
+#define REQUEST_FOR_REFRESH_MY_RELEASE_ORIENT_PRIVATE_REFUSED   @"request_for_refresh_my_release_orient_private_refused"
+
+//
+#define REQUEST_FOR_LOADMORE_MY_RELEASE_BIDDING     @"request_for_loadmore_my_release_bidding"
+#define REQUEST_FOR_LOADMORE_MY_RELEASE_DOING       @"request_for_loadmore_my_release_doing"
+#define REQUEST_FOR_LOADMORE_MY_RELEASE_ORIENT_PRIVATE_WAITING @"request_for_loadmore_my_release_orient_private_waiting"
+#define REQUEST_FOR_LOADMORE_MY_RELEASE_OVERDATE @"request_for_loadmore_my_release_overdate"
+#define REQUEST_FOR_LOADMORE_MY_RELEASE_DONE        @"request_for_loadmore_my_release_done"
+#define REQUEST_FOR_LOADMORE_MY_RELEASE_WITHDRAW    @"request_for_loadmore_my_release_withdrawed"
+#define REQUEST_FOR_LOADMORE_MY_RELEASE_APPLY_WITHDRAW @"request_for_loadmore_my_release_apply_withdraw"
+#define REQUEST_FOR_LOADMORE_MY_RELEASE_ORIENT_PRIVATE_REFUSED  @"request_for_loadmore_my_release_orient_private_refused"
+
+
+
+//通知
+#define GHUNTERLOGIN                @"ghunterlogin"
+#define GHUNTERREGISTER             @"ghunterregister"
+#define GHUNTERADDGOLD              @"ghunteraddgold"
+#define GHUNTERADDCATALOG           @"ghunteraddcatalog"
+#define GHUNTERSETTIME              @"ghuntersettime"
+#define GHUNTERADDTAG               @"ghunteraddtag"
+#define GHUNTERMODIFY               @"ghuntermodify"
+#define GHUNTERSELECTHUNTER         @"ghunterselecthunter"
+#define GHUNTERADDSKILLCAT          @"ghunteraddskillcat"
+//任务分类缓存时间
+#define TASK_CATALOG_TIME           @"task_catalog_time"
+//任务分类缓存内容
+#define TASK_CATALOG                @"task_catalog"
+//技能标签缓存时间
+#define SKILL_TAG_TIME              @"skill_tag_time"
+//技能变迁缓存内容
+#define SKILL_TAG                   @"skill_tag"
+//USER*****************************************************//
+#define API_SESSION_ID  @"api_session_id"
+#define USERINFODIC     @"userInfoDic"
+#define ACCOUNT         @"account"
+#define PASSWORD        @"password"
+#define UID             @"uid"
+#define USERNAME        @"username"
+#define HUNTERID        @"hunterid"
+#define PHONE           @"phone"
+#define SEX             @"sex"
+#define BIRTHDAY        @"birthday"
+#define AGE             @"age"
+#define DESCRIPTION     @"description"
+#define TINY_AVATAR     @"tiny_avatar"
+#define MIDDLE_AVATAR   @"middle_avatar"
+#define LARGE_AVATAR    @"large_avatar"
+#define AVATAR          @"avatar"
+#define LEVEL           @"level"
+#define ABILITY         @"ability"
+#define LATITUDE        @"latitude"
+#define LONGITUDE       @"longitude"
+#define IP              @"ip"
+//Other
+#define API_TOKEN       @"api_token"
+#define ERROR           @"error"
+//验证码
+#define CAPTCHA         @"captcha"
+//反馈
+#define CONTACT         @"contact"
+#define CONTENT         @"content"
+//任务列表
+#define FCID            @"fcid"
+#define CID             @"cid"
+#define PAGE            @"page"
+#define TID             @"tid"
+#define TITLE           @"title"
+#define BOUNTY          @"bounty"
+#define DATELINE        @"dateline"
+#define BIDTYPE         @"bidtype"
+#define HOT             @"hot"
+#define BROWSENUM       @"browsenum"
+#define OWNER           @"owner"
+//检查更新
+#define UPDATE_URL      @"update_url"
+//Methods*************************************************//
+#define HTTP_METHOD_POST                    @"POST"
+#define HTTP_METHOD_PUT                     @"PUT"
+#define HTTP_METHOD_GET                     @"GET"
+#define HTTP_METHOD_DELETE                  @"DELETE"
+//URLS****************************************************//
+//用户登录
+#define URL_USER_LOGIN                      @"http://apiadmin.imgondar.com/appv2/user/login"
+//用户注册
+#define URL_USER_REGISTER                   @"http://apiadmin.imgondar.com/appv2/user/register"
+//注册时获取手机验证码
+#define URL_GETCAPTCHA                      @"http://apiadmin.imgondar.com/appv2/user/register_phone_captcha"
+//注册时手机验证码验证
+
+// 09-01 littlebear  微信注册相关接口
+#define URL_WEIXIN_AUTH                     @"http://apiadmin.imgondar.com/appv2/weixin/auth"
+#define URL_WEIXIN_REGISTER                 @"http://apiadmin.imgondar.com/appv2/weixin/register"
+
+#define URL_CHECK_CAPTCHA                   @"http://apiadmin.imgondar.com/appv2/user/check_captcha"
+//找回密码时获取手机验证码
+#define URL_FINDPASSWORD_GETCAPTCHA         @"http://apiadmin.imgondar.com/appv2/user/findpassword_phone_captcha"
+//找回密码时手机验证码验证
+#define URL_FINDPASSWORD_CHECK_CAPTCHA      @"http://apiadmin.imgondar.com/appv2/user/findpasswd_check_captcha"
+//找回密码时重置密码
+#define URL_RESET_PASSWORD                  @"http://apiadmin.imgondar.com/appv2/user/reset_password"
+//更换手机号
+#define URL_CHANGE_PHONE                    @"http://apiadmin.imgondar.com/appv2/user/change_phone"
+//退出登录
+#define URL_LOGOUT                          @"http://apiadmin.imgondar.com/appv2/user/logout"
+//用户反馈
+#define URL_FEEDBACK                        @"http://apiadmin.imgondar.com/appv2/feedback/add"
+//检查更新
+#define URL_CHECK_NEWVERSION                @"http://apiadmin.imgondar.com/appv2/app/update"
+//修改个人资料
+#define URL_MODIFY_PROFILE                  @"http://apiadmin.imgondar.com/appv2/user/modify_profile"
+//获取附近任务列表
+#define URL_GET_TASK                        @"http://apiadmin.imgondar.com/appv2/task/neighborlist"
+//获取附近的猎人（停用）
+#define URL_GET_HUNTERS                     @"http://apiadmin.imgondar.com/appv2/search/nearbyhunter"
+//获取附近技能
+#define URL_GET_SKILL                       @"http://apiadmin.imgondar.com/appv2/skillshow/neighborlist"
+//评论技能
+#define URL_COMMENT_skill                   @"http://apiadmin.imgondar.com/appv2/comment/create4skillshow"
+//获取技能详情
+#define URL_GET_SKILL_CONTENT               @"http://apiadmin.imgondar.com/appv2/skillshow/view"
+// 技能排序
+#define URL_SKILLSHOW_SORTORDER            @"http://apiadmin.imgondar.com/appv2/skillshow/sortorder"
+//获取技能评论
+#define URL_GET_SKILL_PINGLUN              @"http://apiadmin.imgondar.com/api/comment/list"
+//备注提交
+#define URL_GET_SKILL_remark               @"http://apiadmin.imgondar.com/appv2/urelation/remarkuser"
+//获取技能评价
+#define URL_GET_SKILL_COMMENT               @"http://apiadmin.imgondar.com/appv2/skillshow/skillshow_valuation"
+//获取任务分类
+#define URL_GET_TASK_CATALOG                @"http://apiadmin.imgondar.com/appv2/catalog/listwithicon"
+//获取附近banna        adv/neighbor_topbanners
+#define URL_GET_TASK_BANNA              @"http://apiadmin.imgondar.com/appv2/adv/neighbor_topbanners"
+//获取技能分类
+#define URL_GET_SKILL_CATALOG               @"http://apiadmin.imgondar.com/appv2/skill/cataloglist"
+//根据关键字获取周围任务
+#define URL_SEARCH_TASK                     @"http://apiadmin.imgondar.com/appv2/task/search"
+//获取热门搜索标签
+#define URL_SEARCH_HOT                      @"http://apiadmin.imgondar.com/appv2/search/hotkeyword"
+//根据关键字或手机号获取周围猎人
+#define URL_SEARCH_HUNTER                   @"http://apiadmin.imgondar.com/appv2/user/search"
+//根据技能关键字获取技能
+#define URL_SEARCH_SKILL                    @"http://apiadmin.imgondar.com/appv2/skillshow/search"
+//获取技能标签
+#define URL_GET_SKILL_TAG                   @"http://apiadmin.imgondar.com/appv2/skill/listwithicon"
+//添加技能秀
+#define URL_ADD_SKILLSHOW                   @"http://apiadmin.imgondar.com/appv2/skillshow/add"
+//获取技能秀
+#define URL_GET_USER_SKILL_SHOW             @"http://apiadmin.imgondar.com/appv2/skillshow/list"
+//删除技能秀
+#define URL_DELETE_SKILL_SHOW               @"http://apiadmin.imgondar.com/appv2/skillshow/delete"
+//修改技能秀
+#define URL_UPDATE_SKILL_SHOW               @"http://apiadmin.imgondar.com/appv2/skillshow/update"
+//找任务
+#define URL_FIND_TASK                       @"http://apiadmin.imGondar.com/appv2/find/find_task"
+//找技能
+#define URL_FIND_SKILL                      @"http://apiadmin.imGondar.com/appv2/find/find_skillshow"
+
+//发布任务
+#define URL_CREATE_TASK                     @"http://apiadmin.imgondar.com/appv2/task/create"
+//发布技能
+#define URL_CREATE_SKILL                    @"http://apiadmin.imgondar.com/appv2/skillshow/create"
+//购买技能
+#define URL_BUY_SKILL                       @"http://apiadmin.imgondar.com/appv2/orienttask/create"
+//火热任务
+#define URL_GET_TASK_HOT                    @"http://apiadmin.imgondar.com/appv2/discover/hottask"
+//获取热门技能
+#define URL_GET_TASK_INTRESTED              @"http://apiadmin.imgondar.com/appv2/skillshow/hotskill"
+//获取任务内容详情
+#define URL_GET_TASK_DETAIL                 @"http://apiadmin.imgondar.com/appv1/task/view"
+//评论任务
+#define URL_COMMENT_TASK                    @"http://apiadmin.imgondar.com/appv2/comment/create"
+//删除评论
+#define URL_DELETE_COMMENT                  @"http://apiadmin.imgondar.com/appv2/comment/delete"
+//修改任务
+#define URL_EDIT_TASK                       @"http://apiadmin.imgondar.com/appv2/task/edit"
+//举报任务
+#define URL_REPORT_TASK                     @"http://apiadmin.imgondar.com/appv2/report/create"
+//参与任务
+#define URL_JOIN_TASK                       @"http://apiadmin.imgondar.com/appv2/task/bidding"
+//退出任务
+#define URL_UNJOIN_TASK                     @"http://apiadmin.imgondar.com/appv2/task/biddingout"
+//获取参与猎人
+#define URL_GET_JOINEDHUNTERS               @"http://apiadmin.imgondar.com/appv2/task/joinedhunters"
+//选择参与猎人
+#define URL_SELECT_HUNTER                   @"http://apiadmin.imgondar.com/appv2/task/selecthunter"
+//申请退款（正在竞标的任务）
+#define URL_BACK_BIDDING                    @"http://apiadmin.imgondar.com/appv2/task/applywithdraw_bidding"
+//申请退款（正在进行的任务
+#define URL_BACK_DOING                      @"http://apiadmin.imgondar.com/appv2/task/applywithdraw_doing"
+//猎人处理退款
+#define URL_HUNTER_HANDLE_WITHDRAW          @"http://apiadmin.imgondar.com/appv2/task/deal_withdraw"
+//确认支付评价猎人
+#define URL_CONFIRM_PAYMENT                 @"http://apiadmin.imgondar.com/appv2/valuation/valuate_hunter"
+//猎人评价主人
+#define URL_HUNTER_COMMENT                  @"http://apiadmin.imgondar.com/appv2/valuation/valuate_owner"
+//查看猎人主页
+#define URL_GET_USER_CENTER                 @"http://apiadmin.imgondar.com/appv2/user/viewhunter"
+//查看猎人主页的动态
+#define URL_GET_USER_NEWS                   @"http://apiadmin.imgondar.com/appv2/feed/hunter"
+//查看猎人主页的关注
+#define URL_GET_USER_FOLLOWS                @"http://apiadmin.imgondar.com/appv2/urelation/followlist"
+//查看猎人的评价详情
+#define URL_GET_USER_OWN_EVALUATIONS        @"http://apiadmin.imgondar.com/appv2/valuation/list"
+//关注猎人
+#define URL_FOLLOW_HUNTER                   @"http://apiadmin.imgondar.com/appv2/user/follow"
+//取消关注猎人
+#define URL_UNFOLLOW_HUNTER                 @"http://apiadmin.imgondar.com/appv2/user/unfollow"
+//查看个人主页
+#define URL_GET_MY_CENTER                   @"http://apiadmin.imgondar.com/appv2/user/viewuser"
+//获取我的参与，我的发布的数量
+#define URL_GET_MYTASKNUM                   @"http://apiadmin.imgondar.com/appv2/user/taskNum"
+//查看个人技能
+#define URL_GET_USER_SKILL                  @"http://apiadmin.imgondar.com/appv2/userskill/view"
+//修改密码
+#define URL_MODIFY_PASSWORD                 @"http://apiadmin.imgondar.com/appv2/user/modify_password"
+//添加技能
+#define URL_ADD_SKILLS                      @"http://apiadmin.imgondar.com/appv2/userskill/addskill"
+//获取我的账户
+#define URL_GET_MY_ACCOUNT                  @"http://apiadmin.imgondar.com/appv2/account/view"
+// 微信支付同步回调的地址
+#define URL_POST_WXPAYRESULT                @"http://apiadmin.imgondar.com/appv2/account/wxpay_callback"
+//获取充值记录
+#define URL_GET_RECHARGE_HISTORY            @"http://apiadmin.imgondar.com/appv2/account/recharge_record"
+//获取提现记录
+#define URL_GET_WITHDRAW_HISTORY            @"http://apiadmin.imgondar.com/appv2/account/withdraw_record"
+//用户提现
+#define URL_USER_ACCOUNT_WITHDRAW           @"http://apiadmin.imgondar.com/appv2/account/withdraw"
+//获取我的关注
+#define URL_GET_MY_FOLLOW                   @"http://apiadmin.imgondar.com/appv2/urelation/myfollow"
+//获取我的猎友
+#define URL_GET_MY_FRIEND                   @"http://apiadmin.imgondar.com/appv2/user/myfriend"
+//获取猎人粉丝
+#define URL_GET_HUNTER_FANS                 @"http://apiadmin.imgondar.com/appv2/urelation/userfans"
+//获取猎人关注
+#define URL_GET_HUNTER_FOLLOW               @"http://apiadmin.imgondar.com/appv2/urelation/userfollows"
+//获取我的猎友圈
+#define URL_GET_HUNTER_CIRCLE               @"http://apiadmin.imgondar.com/appv2/feed/list"
+//查看猎人等级参数
+#define URL_GET_HUNTER_LEVEL                @"http://apiadmin.imgondar.com/appv2/level/view"
+//获取任务通知
+#define URL_GET_TASK_NOTICE                 @"http://apiadmin.imgondar.com/appv2/notice2/list"
+//删除一条任务通知
+#define URL_DELETE_TASK_NOTICE              @"http://apiadmin.imgondar.com/appv2/notice2/delete"
+//获取私信通知
+#define URL_GET_MESSAGE_NOTICE              @"http://apiadmin.imgondar.com/appv2/message/list"
+//删除一条私信通知
+#define URL_DELETE_MESSAGE_NOTICE           @"http://apiadmin.imgondar.com/appv2/message/delete"
+//处理未读私信
+#define URL_DEAL_UNREAD_MESSAGE             @"http://apiadmin.imgondar.com/appv2/message/deal"
+//获取公告通知
+#define URL_GET_NOTICE_LIST               @"http://apiadmin.imgondar.com/appv2/notice/list"
+//处理未读公告
+#define URL_DEAL_UNREAD_NOTICE              @"http://apiadmin.imgondar.com/appv2/notice/deal"
+//处理任务通知
+#define URL_HANDLE_TASK_NOTICE              @"http://apiadmin.imgondar.com/appv2/notice/deal"
+//处理私信通知
+#define URL_HANDLE_MESSAGE_NOTICE           @"http://apiadmin.imgondar.com/appv2/message/deal"
+//获取未读通知数目
+#define URL_GET_NOTICE_NUMBER               @"http://apiadmin.imgondar.com/appv2/notice/unread_count"
+//职业标签
+#define URL_GET_TABBAR_JOBS               @"http://apiadmin.imgondar.com/appv2/jobs/joblist"
+//获取行业
+#define URL_GET_NOTICE_JOBS               @"http://apiadmin.imgondar.com/appv2/jobs/industrylist"
+//全部标记为已读
+#define URL_MARKALL_NOTICE                  @"http://apiadmin.imgondar.com/appv2/notice/markall"
+//全部标记为已读
+#define URL_MARKALL_MESSAGE                  @"http://apiadmin.imGondar.com/appv2/message/markall"
+//删除所有消息
+#define URL_CLEANALL_NOTICE                 @"http://apiadmin.imgondar.com/appv2/notice/deleteall"
+//获取聊天记录
+#define URL_GET_CHAT_HISTORY                @"http://apiadmin.imgondar.com/appv2/message/talk"
+//发送私信
+#define URL_SEND_MESSAGE                    @"http://apiadmin.imgondar.com/appv2/message/create"
+//获取活动内容
+#define URL_GET_ACTIVITY                    @"http://apiadmin.imgondar.com/appv2/activity/index"
+//获取任务奖励
+#define URL_GET_ACTIVITY_REWARD             @"http://apiadmin.imgondar.com/appv2/activity/record"
+
+//金币商城
+#define URL_COINSHOP_LOGIN                  @"http://apiadmin.imgondar.com/appv2/coin/login"
+
+// 我的优惠券
+#define URL_MY_COUPON                       @"http://apiadmin.imgondar.com/appv2/coupon/list"
+#define URL_MY_COUPONDETAIL                 @"http://apiadmin.imgondar.com/appv2/coupon/view"
+#define URL_MY_CODEIDDETAIL                 @"http://adm.imgondar.com/appv2/coupon/querystatus"
+
+//给小费
+#define URL_LEAVE_FEE                       @"http://apiadmin.imgondar.com/appv2/account/leavefee"
+//请求阿里巴巴服务器进行支付
+#define URL_REQUEST_ALIBABA                 @"http://apiadmin.imgondar.com/appv2/account/alipay"
+//请求阿里巴巴成功之后同步请求赏金猎人服务器
+#define URL_REQUEST_HUNTER_AFTER_ALIBABA    @"http://apiadmin.imgondar.com/appv2/account/alipay_synchronization"
+#define URL_CHANGE_SKILL                    @"http://apiadmin.imgondar.com/appv2/skillshow/update"
+//发现页面banner条
+#define URL_GET_BANNER                      @"http://apiadmin.imgondar.com/appv2/discover/banners"
+//发现页面签到
+#define URL_CHACKIN                         @"http://apiadmin.imgondar.com/appv2/sign/check"
+//签到排行接口
+#define URL_CHACKIN_RANK                    @"http://apiadmin.imgondar.com/appv2/sign/list"
+//技能详细评价
+#define URL_GET_SKILL_DETAILCOMMENT         @"http://apiadmin.imgondar.com/appv2/valuation/view"
+
+// 2015-02-22 新增消息
+#define REQUEST_FOR_MESSAGE_BYMID           @"request_for_message_bymid"
+
+//获取我参与的任务
+#define URL_GET_MY_TASK                     @"http://apiadmin.imgondar.com/appv2/mytask/myjoin"
+// 我的参与小红点
+#define URL_MY_JOIN                         @"http://apiadmin.imgondar.com/appv2/mytask/joinnum"
+// 我的发布小红点
+#define URL_MY_PUBLISH                      @"http://apiadmin.imgondar.com/appv2/mytask/publishnum"
+
+//获取我发布的任务
+#define URL_GET_MY_RELEASE                  @"http://apiadmin.imgondar.com/appv2/mytask/mypublish"
+//获取别人发布的任务
+#define URL_GET_HUNTER_RELEASE              @"http://apiadmin.imgondar.com/api/mytask/huntertask"
+//获取任务评论
+#define URL_GET_TASK_COMMENT                @"http://apiadmin.imgondar.com/api/comment/list"
+//查看任务评价
+#define URL_SHOW_TASK_VALUATION             @"http://apiadmin.imgondar.com/api/valuation/view"
+
+// 获取收藏任务的接口
+#define URL_GET_COLLECTION_TASK             @"http://apiadmin.imgondar.com/appv2/collection/task"
+// 获取收藏技能秀的接口
+#define URL_GET_COLLECTION_SKILLSHOW        @"http://apiadmin.imgondar.com/appv2/collection/skillshow"
+// 获取收藏技能的userInfo
+#define REQUEST_FOR_COLLECTION_SKILLSHOW    @"request_for_collection_skillshow"
+
+//添加收藏
+#define URL_ADD_COLLECTION                  @"http://apiadmin.imgondar.com/appv2/collection/add"
+//删除收藏
+#define URL_DELETE_COLLECTION               @"http://apiadmin.imgondar.com/appv2/collection/delete"
+// 加载更所收藏任务
+#define REQUEST_FOR_LOADMORE_COLLECTIONRENWU @"request_for_loadmore_collectionrenwu"
+
+//获取聊天内容
+#define URL_GET_CHAT_MESSAGE                @"http://apiadmin.imgondar.com/appv2/message/msgbymid"
+// 提交实名认证审核
+#define URL_GET_IDENTITY_INDEX             @"http://apiadmin.imgondar.com/appv2/identity/index"
+#define URL_POST_IDENTITY_PHOTO             @"http://apiadmin.imgondar.com/appv2/identity/commit"
+// 记录分享数据
+#define URL_SHARE_RECORD                   @"http://apiadmin.imgondar.com/appv2/share/record"
+
+// 兑换金币
+#define URL_EXCHANGE_GOLD                  @"http://apiadmin.imgondar.com/appv2/coin/exchange"
+
+// 获取分享记录
+#define URL_SHARE_COUNT                    @"http://apiadmin.imgondar.com/appv2/share/list"
+
+// 发布任务秀
+#define URL_TASK_SHOW                      @"http://apiadmin.imgondar.com/appv2/taskshow/create"
+
+// 任务秀列表
+#define URL_TASK_SHOW_LIST                 @"http://apiadmin.imgondar.com/appv2/taskshow/list"
+
+// 任务秀驳回
+#define URL_TASKSHOW_REJECT                @"http://apiadmin.imgondar.com/appv2/taskshow/reject"
+
+// 任务秀打赏
+#define URL_TASKSHOW_REWARD                @"http://apiadmin.imgondar.com/appv2/taskshow/givefee"
+
+// 查看猎人和任务关系
+#define URL_TASKDETAIL_WITH_HUNTER         @"http://apiadmin.imgondar.com/appv2/task/usertask"
+
+
+// NOTICE_TYPE 配置
+#define NOTICE_TYPE_PUBLICNOTICE   @"1"
+#define NOTICE_TYPE_TASK   @"3"
+#define NOTICE_TYPE_MESSAGE   @"5"
+#define NOTICE_TYPE_SKILLSHOW   @"6"
+#define NOTICE_TYPE_DISCOVER_ADVERTISEMENT   @"7"
+#define NOTICE_TYPE_TASKVIEW   @"8"
+#define NOTICE_TYPE_SKILLSHOWVIEW   @"9"
+
+// 私密任务相关接口
+#define URL_FOR_DEAl_PRIVAE_TASK        @"http://apiadmin.imgondar.com/appv2/orienttask/deal_orient_private_task"
+#define REQUEST_FOR_DEAL_PRIVAE_TASK                       @"request_for_deal_private_task"
+//查看猎人主页的评价
+#define URL_GET_USER_EVALUATIONS            @"http://apiadmin.imgondar.com/appv2/valuation/uservaluation"
+
+// 修改定向任务的接口
+#define URL_UPDATE_ORIENTTASK  @"http://apiadmin.imgondar.com/appv2/orienttask/update"
+#define REQUEST_FOR_UPDATE_ORIENTTASK @"request_for_update_orienttask"
+
+// 查看猎人主页的评价api
+#define URL_GET_USER_VALUATIONS_API1            @"http://apiadmin.imgondar.com/api/valuation/list"
+//身份认证
+#define URL_GET_USER_IDENTITY @"http://apiadmin.imgondar.com/appv2/identity/index"
+//提交身份认证的照片
+#define URL_POST_USER_IDENTITY @"http://apiadmin.imgondar.com/appv2/identity/commit"
+// 获取热门学校
+#define URL_GET_HOT_UNIVERSITIES     @"http://apiadmin.imgondar.com/appv2/university/gethots"
+// 搜索热门学校
+#define URL_SEARCH_UNIVERSITIES     @"http://apiadmin.imgondar.com/appv2/university/search"
+//背景颜色227 226 219
+#define ScreenHeightFull ([UIScreen mainScreen].bounds.size.height)
+#define ScreenWidthFull ([UIScreen mainScreen].bounds.size.width)
+#define backgroud_Bg [UIColor colorWithRed:227.0/255 green:226.0/255 blue:219.0/255 alpha:1]
+
+
+#define Nav_backgroud [UIColor colorWithRed:234.0/255 green:85.0/255 blue:20.0/255 alpha:1]
+
+
+#define RGBCOLOR(A,B,C) [UIColor colorWithRed:A/255.0 green:B/255.0 blue:C/255.0 alpha:1.0]
+#define REPORT_TYPE_TASK "3"
+#define REPORT_TYPE_SKILLSHOW "4"
+
+#define TASK_TYPE_NORMAL 0
+#define TASK_TYPE_ORIENT_PUBLIC 1
+#define Task_TYPE_ORIENT_PRIVATE 2
+
+// 分享类型配置
+// 分享的类型
+#define SHARETYPE_TASK          @"1"
+#define SHARETYPE_SKILLSHOW     @"2"
+#define SHARETYPE_WEBPAGE       @"3"
+#define SHARETYPE_SIGN          @"4"
+#define SHARETYPE_VALUATION     @"5"
+#define SHARETYPE_HUNTER        @"6"
+//分享平台配置
+#define SHAREPLATFORM_QQ            @"qq"
+#define SHAREPLATFORM_QZONE         @"qzone"
+#define SHAREPLATFORM_SINAWEIBO        @"sinaweibo"
+#define SHAREPLATFORM_WECHAT        @"wechat"
+#define SHAREPLATFORM_WXMOMENTS     @"wxmoments"
+
+#endif

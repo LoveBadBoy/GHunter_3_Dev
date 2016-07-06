@@ -1,0 +1,148 @@
+//
+//  Prefix header
+//
+//  The contents of this file are implicitly included at the beginning of every source file.
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_3_0
+#warning "This project uses features only available in iOS SDK 3.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+    #import <CoreData/CoreData.h>
+    #import "MobClick.h"
+#endif
+
+#pragma mark -
+#pragma mark 发布前请注意此处
+
+// 如果没有定义__RELEASE__宏，则允许NSLog输出，否则不允许输出
+// 调试时如果需要控制台输出，则注释#define __RELEASE__一行即可，发布前开启注释
+
+#define __DEBUG__
+
+#ifdef __DEBUG__
+    #define NSLog(...) NSLog(__VA_ARGS__)
+    #define debugMethod() NSLog(@"%s", __func__)
+
+    #define NULLSAFE_ENABLED 1
+#else
+    #define NSLog(...)
+    #define debugMethod()
+
+    #define NULLSAFE_ENABLED 0
+#endif
+
+#pragma mark -
+
+// 颜色和透明度设置
+#define RGBA(r,g,b,a)               [UIColor colorWithRed:(float)r/255.0f green:(float)g/255.0f blue:(float)b/255.0f alpha:a]
+// 屏幕尺寸
+#define kWinSize [UIScreen mainScreen].bounds.size
+#define mainScreenWidth             [UIScreen mainScreen].bounds.size.width
+#define mainScreenheight            [UIScreen mainScreen].bounds.size.height
+// TabBar高度
+#define TAB_BAR_HEIGHT              40
+// 友盟统计-event
+#define UMEVENT_LAUNCH @"launch"	// 启动应用
+#define UMEVENT_RELEASE_SKILL @"release_skill"	// 发布技能
+#define UMEVENT_CHANGE_SKILL @"change_skill"	// 修改技能
+#define UMEVENT_RELEASE_TASK @"release_task"	// 发布任务
+#define UMEVENT_REGISTER @"register"	// 用户注册
+#define UMEVENT_LOGIN @"login"	// 用户登录
+#define UMEVENT_TASK_PUBLISH @"TaskPublish"	// 成功发布任务
+#define UMEVENT_WITHDRAW_RECORD @"withdrawRecord"	// 查看提现记录
+#define UMEVENT_MY_BILL @"MyBill"	// 时光账单
+#define UMEVENT_TBOUNTY @"TBounty"	// 附近-任务-赏金
+#define UMEVENT_THOTEST @"THotest"	// 附近-任务-热度
+#define UMEVENT_TLATEST @"TLatest"	// 附近-任务-最新
+#define UMEVENT_TNEAREST @"TNearest"	// 附近-任务-距离
+#define UMEVENT_SPRICE @"SPrice"	// 附近-技能-售价
+#define UMEVENT_SHOTEST @"SHotest"	// 附近-技能-热度
+#define UMEVENT_SLATEST @"SLatest"	// 附近-技能-最新
+#define UMEVENT_SNEAREST @"SNearest"	// 附近-技能-距离
+#define UMEVENT_TONLINE @"TOnline"	// 附近-任务-线上
+#define UMEVENT_TLOVE @"TLove"	// 附近-任务-表白
+#define UMEVENT_TSTUDY @"TStudy"	// 附近-任务-学习
+#define UMEVENT_TINSTRUCTOR @"TInstructor"	// 附近-任务-陪练
+#define UMEVENT_TCOACH @"TCoach"	// 附近-任务-教练
+#define UMEVENT_TPARTTIME @"TParttime"	// 附近-任务-兼职
+#define UMEVENT_TACTIVITY @"TActivity"	// 附近-任务-活动
+#define UMEVENT_TRABBIT @"TRabbit"	// 附近-任务-飞毛腿
+#define UMEVENT_TALL @"TAll"	// 附近-任务-全部
+#define UMEVENT_SSERVICE @"SService"	// 附近-技能-生活服务
+#define UMEVENT_SPARTTIME @"SParttime"	// 附近-技能-兼职实习
+#define UMEVENT_SENTERTAIN @"SEntertain"	// 附近-技能-运动娱乐
+#define UMEVENT_SSKILL @"SSkill"	// 附近-技能-IT技能
+#define UMEVENT_SINNOVATIVE @"SInnovative"	// 附近-技能-创意设计
+#define UMEVENT_SART @"SArt"	// 附近-技能-文化艺术
+#define UMEVENT_SEMOTION @"SEmotion"	// 附近-技能-情感技能
+#define UMEVENT_STUTOR @"STutor"	// 附近-技能-授课辅导
+#define UMEVENT_SALL @"SAll"	// 附近-技能-全部
+#define UMEVENT_SEARCH @"Search"	// 发现-进入搜索页
+#define UMEVENT_HUNTER_CIRCLE @"HunterCircle"	// 发现-进入猎友圈
+#define UMEVENT_HOT_TASK @"HotTask"	// 发现-最火任务
+#define UMEVENT_MARK_ALL @"MarkAll"	// 通知-全部标记已读
+#define UMEVENT_NOTICE_DELETE_ALL @"NoticeDeleteAll"	// 通知-清空所有消息
+#define UMEVENT_MESSAGE_MARK_ALL @"MessageMarkAll"	// 通知-全部标记已读
+#define UMEVENT_LOGOUT @"Logout"	// 设置-注销
+#define UMEVENT_CLEAR_CACHE @"ClearCache"	// 设置-清理缓存
+#define UMEVENT_PUSHSETTING @"PushSetting"	// 设置-推送设置
+#define UMEVENT_MY_FRIENS_HUNTER @"MyFriensHunter"	// 我的-我的猎友
+#define UMEVENT_MY_COLLECTION @"MyCollection"	// 我的-我的收藏
+#define UMEVENT_MY_SKILL @"MySkill"	// 我的-我的技能
+#define UMEVENT_MY_VALUATION @"MyValuation"	// 我的-我的评价
+#define UMEVENT_MY_ATTEND @"MyAttend"	// 我的-我的参与
+#define UMEVENT_MY_PUBLISHED @"MyPublished"	// 我的-我的发布
+#define UMEVENT_MY_LEVEL @"MyLevel"	// 我的-我的等级
+
+#define UMEVENT_SHARETASK_WXCIRCLE @"Taskview_share_wxcircle"   // 分享任务到朋友圈
+#define UMEVENT_SHARESKILL_WXCIRCLE @"Skillview_share_wxcircle"  // 分享技能到朋友圈
+#define UMEVENT_SHAREUSER_WXCIRCLE @"Userview_share_wxcircle"
+
+#define UMEVENT_SHARETASK_WXFRIEND @"Taskview_share_wxfriend"    // 分享任务给微信朋友
+#define UMEVENT_SHARESKILL_WXFRIEND @"Skillview_share_wxfriend"  // 分享技能给微信朋友
+#define UMEVENT_SHAREUSER_WXFRIEND  @"Userview_share_wxfriend"
+
+#define UMEVENT_SHARETASK_SINA_WEIBO @"Taskview_share_sinawb"   // 分享任务到新浪微博
+#define UMEVENT_SHARESKILL_SINA_WEIBO @"Skillview_share_sinawb"  // 分享技能到新浪微博
+#define UMEVENT_SHAREUSER_SINA_WEIBO   @"Userview_share_sinawb"
+
+// 分享的图片链接
+#define SHARE_IMG_URL @"http://imgondar.com/images/shareimg.png"
+
+// 时间
+#define ONE_MINUTE  60
+#define ONE_HOUR    (60*ONE_MINUTE)
+#define ONE_DAY     (24*ONE_HOUR)
+#define ONE_MONTH   (30*ONE_DAY)
+#define ONE_YEAR    (12*ONE_MONTH)
+// 是否是闰年
+#define  IS_LEAP_YEAR(year)  year%4==0&&year%100!=0||year%400==0
+// 时间上界和下界
+#define startYear 1950
+#define endYear 2050
+// 退款理由
+#define reason1 @"猎人不能完成任务"
+#define reason2 @"与猎人协商一致退款"
+#define reason3 @"其他原因"
+// 圆角
+#define Radius 2.0
+
+// 默认经纬度，天安门
+#define LOC_DEFAULT_LATITUDE  @"39.915168"
+#define LOC_DEFAULT_LONGITUDE  @"116.403875"
+
+// 任务详情字数最长
+#define TASK_DESCRIPTION_MAX_LENGTH 400
+#define UICOLORFROMRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
+// 请求失败的提示
+#define HTTPREQUEST_ERROR  @"请求失败"
+#define UNLOGIN_ERROR      @"请先登录"
+#define SKILLSHOW_UNLINE   @"技能秀未上架，不能购买"
+

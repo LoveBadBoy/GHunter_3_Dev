@@ -1,0 +1,205 @@
+//
+//  ghuntertaskViewController.h
+//  ghunter
+//
+//  Created by chensonglu on 14-3-19.
+//  Copyright (c) 2014年 ghunter. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "PullTableView.h"
+#import "UIImageView+WebCache.h"
+#import "ghunterRequester.h"
+#import "UMSocial.h"
+#import "ghunterselecthunterViewController.h"
+#import "SIAlertView.h"
+#import "ghunterModifyTaskViewController.h"
+#import <AddressBook/AddressBook.h>
+#import <AddressBookUI/AddressBookUI.h>
+#import "ghunterWithdrawReasonViewController.h"
+#import "ghunterHandleWithDrawViewController.h"
+#import "ghunterEvaluationViewController.h"
+#import "ghunterTaskCommentViewController.h"
+#import "OHAttributedLabel.h"
+#import "TQStarRatingView.h"
+#import "ghunterUserCenterViewController.h"
+#import "ImgScrollView.h"
+#import "ghunterWordChange.h"
+#import "HPGrowingTextView.h"
+#import "ghunterChatViewController.h"
+#import "ghunterSkillReleaseViewController.h"
+#import "ghunterCheckEvaluationViewController.h"
+#import "ghunterShareCountViewController.h"
+#import "ghunterBiddingReasonViewController.h"
+#import "ghunterRewardAndSelectViewController.h"
+#import "ghunterRechargeViewController.h"
+#import "ghunterMyCouponViewController.h"
+
+typedef void(^callBack)();
+
+@interface ghuntertaskViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,PullTableViewDelegate,UIActionSheetDelegate,UITextViewDelegate, UITextFieldDelegate,ABNewPersonViewControllerDelegate,UIGestureRecognizerDelegate,ImgScrollViewDelegate,UIScrollViewDelegate,HPGrowingTextViewDelegate,ZYQAssetPickerControllerDelegate,UINavigationControllerDelegate,UIImagePickerControllerDelegate, OHAttributedLabelDelegate>{
+    PullTableView *taskTable;
+    NSUInteger page;
+    NSInteger taskPage;
+    NSMutableArray *taskcommentArray;
+    // NSMutableArray* skillcommentArray;
+    NSMutableDictionary *task;
+    // NSMutableDictionary* skill;
+    NSMutableArray *imgarray;
+    UIView *tasktailView;
+    BOOL collected;
+    BOOL requested;
+    BOOL isShow;
+    NSString* showStr;
+    SIAlertView *moreAlertView;
+    IBOutlet UIView *toolBar;
+    // 已添加的图片显示的区域
+    IBOutlet UIView *addedImageLayout;
+    
+    NSInteger commentCount;
+    
+    IBOutlet UILabel *textViewTip;
+    SIAlertView *contactAlertView;
+    SIAlertView *reportAlertView;
+    SIAlertView *shareAlertView;
+    SIAlertView *tipAlertView;
+    ghunterLoadingView *loadingView;
+    NSUInteger to_comment;
+    NSMutableDictionary *account;
+    NSMutableArray *imgArray;
+    NSMutableArray *dataimgarr;
+    UIScrollView *myScrollView;
+    
+    NSInteger currentIndex;
+    UIView *markView;
+    UIView *scrollPanel;
+    ImgScrollView *lastImgScrollView;
+    NSInteger once;
+    UILabel * trade_dateline;
+    UIButton *Stopbtn;
+    UIButton *zankaibtn;
+    UIActionSheet *saveAction;
+    
+    UIScrollView *scrollView;
+    NSMutableArray *addarray;
+    UILabel *taksaddres;
+    BOOL seled;
+    NSMutableDictionary *skdic;
+    
+    NSString *replyStr;
+    
+    UIButton * Coment;
+    UIButton *  Evaluation;
+    UILabel* redlin1;
+    UILabel* redlin2;
+    BOOL flagClick;
+    NSMutableArray * taskShowArray;
+    NSString * contentStr;
+    NSString * tmpString;
+    SIAlertView * rewardView;
+    UIView * rewardFilter;
+    
+    BOOL isRewardHunter;
+    BOOL isJoinHunter;
+    BOOL isRejectHunter;
+    
+    BOOL isBounty;
+    BOOL isGold;
+    BOOL isCoupon;
+    
+    
+    PullTableView * cellShow;
+    NSString * preString;
+    
+    BOOL is4Show;
+    BOOL is4Comment;
+}
+@property (nonatomic, strong) NSMutableArray *selectedIndexes;
+@property (nonatomic, strong) NSMutableArray *checkmarkImageViews;
+@property (retain, nonatomic) NSString *fromPush;
+@property (retain, nonatomic) NSString *isShowed;
+@property (retain, nonatomic) NSString *tid;
+//@property (strong, nonatomic) IBOutlet UIButton *joinin;
+@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
+// status == 8 猎人处理购买技能的任务
+@property (strong, nonatomic) IBOutlet UIView *buyskillHunterDealView;
+// 已拒绝的私密任务，主人处理
+@property (strong, nonatomic) IBOutlet UIView *orienttaskOwnerDeal;
+
+@property (strong, nonatomic) IBOutlet UIView *failView;
+@property (strong, nonatomic) IBOutlet UIView *bidView;
+@property (strong, nonatomic) IBOutlet UIView *choosehunterView;
+@property (strong, nonatomic) IBOutlet UIView *payView;
+@property (strong, nonatomic) IBOutlet UIView *contactView;
+@property (strong, nonatomic) IBOutlet UIView *comment;
+@property (strong, nonatomic) IBOutlet UIView *commentedView;
+@property (strong, nonatomic) IBOutlet UIView *withdrawForGold;
+@property (strong, nonatomic) IBOutlet UIView *withDrawForHunter;
+@property (strong, nonatomic) IBOutlet UIView *overTimeView;
+@property (strong,nonatomic)UIWindow *window;
+
+// 私密任务相关
+@property (weak, nonatomic) IBOutlet UIView *refusedApplyWithDrawBG;
+@property (weak, nonatomic) IBOutlet UIView *refusedModifyBG;
+@property (weak, nonatomic) IBOutlet UIView *hunterAcceptBG;
+@property (weak, nonatomic) IBOutlet UIView *hunterRefuseBG;
+@property (strong,nonatomic)  NSString *yesorno;
+@property (copy, nonatomic)callBack callBackBlock;
+
+@property(nonatomic,retain)NSMutableDictionary *user;
+@property(nonatomic,retain)NSString *sender_uid;
+@property(nonatomic,retain)NSString *sender_username;
+@property(nonatomic,retain)NSString *uid;
+
+@property(retain,nonatomic)NSString *reply_uid;
+@property(retain,nonatomic)NSString *reply_cid;
+
+//
+@property (strong, nonatomic) IBOutlet UIButton *faceBtn;
+@property (strong, nonatomic) IBOutlet UIButton *addBtn;
+
+@property (strong, nonatomic) IBOutlet UIButton *downBtn;
+@property (strong, nonatomic) IBOutlet UIButton *chatBtn;
+
+@property (strong, nonatomic) IBOutlet UILabel *selectHunterLb;
+
+@property (assign,nonatomic) NSInteger currentPage; //页码
+@property (assign,nonatomic) NSInteger valuePage; //评价的页码
+
+@property(nonatomic,retain)NSMutableDictionary * taskShowDict;
+
+@property(strong,nonatomic) UIActionSheet * joinskillShow;
+
+@property(strong,nonatomic) UIView * choseView;
+
+@property (nonatomic, copy) NSString * accountNum;
+@property (nonatomic, copy) NSString * bountyGoldNum;
+
+@property (nonatomic, copy) NSString * isfee;
+@property (nonatomic, copy) NSString * iscoinfee;
+@property (nonatomic, copy) NSString * iscodeid;
+
+// 适配
+//@property (strong, nonatomic) IBOutlet UIButton *commentBtn;
+@property(strong,nonatomic) UIButton * commentBtn;
+@property(strong,nonatomic) UIButton * leftBtn;
+@property(strong,nonatomic) UIButton * rightBtn;
+@property(strong, nonatomic) UIButton * sendMessageBtn;
+@property(strong, nonatomic) UIButton * joinBtn;
+@property(strong, nonatomic) UIView * participateBidding;
+@property(strong,nonatomic) UILabel * biddingLabel;
+@property(strong,nonatomic) UIImageView * participateBiddingAvatar;
+
+@property(strong,nonatomic) UILabel * isFeeLb;
+@property(strong,nonatomic) UILabel * isCoinLb;
+@property(strong,nonatomic) UILabel * isCodeLb;
+
+
+
+// 收藏
+- (IBAction)collectBtn:(id)sender;
+
+// 私信
+- (IBAction)privateMessage:(id)sender;
+
+@end

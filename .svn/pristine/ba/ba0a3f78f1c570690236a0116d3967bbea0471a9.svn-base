@@ -1,0 +1,499 @@
+//
+//  ghunterMyFollowViewController.m
+//  ghunter
+//
+//  Created by chensonglu on 14-8-22.
+//  Copyright (c) 2014年 ghunter. All rights reserved.
+//关注-好友-粉丝页面
+
+#import "ghunterMyFollowViewController.h"
+
+@interface ghunterMyFollowViewController ()
+@property (weak, nonatomic) IBOutlet UILabel *followTitle;
+@property (strong, nonatomic) IBOutlet UIView *topVIew;
+
+@property (strong, nonatomic) IBOutlet UIView *bg;
+
+
+@end
+
+@implementation ghunterMyFollowViewController
+
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+    if (self) {
+        // Custom initialization
+    }
+    return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+     _bg.backgroundColor = Nav_backgroud;
+    // Do any additional setup after loading the view from its nib.
+    page = 1;
+    if(self.type == 0){
+        [self.followTitle setText:@"关注"];
+    }else if (self.type == 1){
+        [self.followTitle setText:@"猎友"];
+    } else if (self.type == 2) {
+        [self.followTitle setText:@"粉丝"];
+    } else if (self.type == 3) {
+        [self.followTitle setText:@"关注"];
+    }
+    dataArray = [[NSMutableArray alloc] init];
+    mySearchBar = [[UISearchBar alloc]initWithFrame:CGRectMake(0, 0, mainScreenWidth, 40)];
+    _table.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
+    _table.separatorColor = RGBA(235, 235, 235, 1);
+    mySearchBar.delegate = self;
+    mySearchBar.backgroundColor = [UIColor clearColor];
+    mySearchBar.tintColor = [UIColor colorWithRed:234/255.0 green:85/255.0 blue:20/255.0 alpha:1.0];
+    mySearchBar.barTintColor = [UIColor colorWithRed:228/255.0 green:227/255.0 blue:220/255.0 alpha:1.0];
+    mySearchBar.searchBarStyle = UISearchBarStyleMinimal;
+    
+    for (UIView *subview in mySearchBar.subviews)
+    {
+        if ([subview isKindOfClass:NSClassFromString(@"UISearchBarBackground")])
+        {
+            [subview setHidden:YES];
+            [subview removeFromSuperview];
+        }
+    }
+    [mySearchBar setPlaceholder:@"请输入拼音或昵称进行搜索"];
+    searchDisplayController = [[UISearchDisplayController alloc]initWithSearchBar:mySearchBar contentsController:self];
+    searchDisplayController.searchResultsDataSource = self;
+    searchDisplayController.searchResultsDelegate = self;
+    searchDisplayController.searchResultsTableView.showsVerticalScrollIndicator = NO;
+    searchDisplayController.searchResultsTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
+    self.table = [[PullTableView alloc]initWithFrame:CGRectMake(0, 64, mainScreenWidth, mainScreenheight - 44 - 20) style:UITableViewStylePlain];
+    self.table.dataSource = self;
+    self.table.delegate = self;
+    self.table.pullDelegate = self;
+    self.table.showsVerticalScrollIndicator = NO;
+    self.table.separatorStyle = UITableViewCellSeparatorStyleNone;
+    self.table.backgroundColor = [UIColor colorWithRed:228/255.0 green:227/255.0 blue:220/255.0 alpha:1.0];
+	self.table.tableHeaderView = mySearchBar;
+    [self.view addSubview:self.table];
+    
+    [self startLoad];
+    if(self.type == 0){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_MY_FOLLOW withUserInfo:REQUEST_FOR_GET_MY_FOLLOW withString:[NSString stringWithFormat:@"?page=%zd&api_session_id=%@",page,[ghunterRequester getUserInfo:API_SESSION_ID]]];
+    } else if (self.type == 1){
+        [MobClick event:UMEVENT_MY_FRIENS_HUNTER];
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_MY_FRIEND withUserInfo:REQUEST_FOR_GET_MY_FRIEND withString:[NSString stringWithFormat:@"?page=%zd&api_session_id=%@",page,[ghunterRequester getUserInfo:API_SESSION_ID]]];
+    } else if (self.type == 2){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_HUNTER_FANS withUserInfo:REQUEST_FOR_GET_HUNTER_FANS withString:[NSString stringWithFormat:@"?page=%zd&uid=%@",page,self.uid]];
+    } else if (self.type == 3){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_HUNTER_FOLLOW withUserInfo:REQUEST_FOR_GET_HUNTER_FOLLOW withString:[NSString stringWithFormat:@"?page=%zd&uid=%@",page,self.uid]];
+    }
+    
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    self.tabBarController.tabBar.hidden = YES;
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.navigationBar.alpha = 0;
+//    [self.navigationController.view sendSubviewToBack:self.navigationController.navigationBar];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+#pragma mark - UITableViewDataSource
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (tableView == self.searchDisplayController.searchResultsTableView) {
+        return searchResults.count;
+    }
+    else {
+        return dataArray.count;
+    }
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    static NSString *CellIdentifier = @"Cell";
+    UITableViewCell *cell = (UITableViewCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+    }
+    NSDictionary *follow;
+    if (tableView == self.searchDisplayController.searchResultsTableView) {
+        follow = [searchResults objectAtIndex:indexPath.row ];
+    }
+    else {
+        follow = [dataArray objectAtIndex:indexPath.row];
+    }
+    NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"followsView" owner:self options:nil];
+    cell = [nibs objectAtIndex:0];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    cell.backgroundColor = [UIColor clearColor];
+    
+    UIImageView *userIcon = (UIImageView *)[cell viewWithTag:1];
+    UILabel *name = (UILabel *)[cell viewWithTag:2];
+    UIImageView *gender = (UIImageView *)[cell viewWithTag:3];
+//    UILabel *age = (UILabel *)[cell viewWithTag:4];
+    UIImageView *identity = (UIImageView *)[cell viewWithTag:5];
+
+    UILabel *level = (UILabel *)[cell viewWithTag:6];
+    UIView *back = (UIView *)[cell viewWithTag:7];
+    userIcon.clipsToBounds = YES;
+    userIcon.layer.cornerRadius = userIcon.frame.size.height/2.0;
+    [userIcon sd_setImageWithURL:[follow objectForKey:@"middle_avatar"] placeholderImage:[UIImage imageNamed:@"avatar"]];
+    [name setText:[follow objectForKey:@"username"]];
+    if([[follow objectForKey:@"sex"] isEqualToString:@"0"]){
+        [gender setImage:[UIImage imageNamed:@"female"]];
+    }else{
+        [gender setImage:[UIImage imageNamed:@"male"]];
+    }
+//    [age setText:[NSString stringWithFormat:@"%@岁",[follow objectForKey:@"age"]]];
+    CGSize usernameSize = [[follow objectForKey:USERNAME] sizeWithFont:name.font];
+//    if (name.frame.origin.x + usernameSize.width + 3 + gender.frame.size.width + 3 + age.frame.size.width > back.frame.size.width) {
+//        usernameSize.width = back.frame.size.width - age.frame.size.width - 3 - gender.frame.size.width - 3 - name.frame.origin.x;
+//    }
+    CGRect nameFrame = name.frame;
+    nameFrame.size.width = usernameSize.width + 3;
+    name.frame = nameFrame;
+    CGRect genderFrame = gender.frame;
+    genderFrame.origin.x = name.frame.origin.x + name.frame.size.width + 3;
+    gender.frame = genderFrame;
+//    CGRect ageFrame = age.frame;
+//    ageFrame.origin.x = gender.frame.origin.x + gender.frame.size.width + 3;
+//    age.frame = ageFrame;
+    
+    UIImageView * levelImg = (UIImageView *)[cell viewWithTag:88];
+    if([[follow objectForKey:@"is_identity"] isEqualToString:@"3"]) {
+        
+        CGRect levelFrame = levelImg.frame;
+        
+        TQStarRatingView *star = [[TQStarRatingView alloc] initWithFrame:CGRectMake(levelImg.frame.origin.x + levelImg.frame.size.width + 3, levelImg.frame.origin.y + (levelImg.frame.size.height - 10) / 2.0, 50, 10) numberOfStar:5];
+        [back addSubview:star];
+        [star setScore:[[follow objectForKey:@"kopubility"] floatValue]];
+        [star setuserInteractionEnabled:NO];
+        
+    } else if ([[follow objectForKey:@"is_identity"] isEqualToString:@"1"]) {
+        
+        TQStarRatingView *star = [[TQStarRatingView alloc] initWithFrame:CGRectMake(identity.frame.origin.x + identity.frame.size.width + 3, identity.frame.origin.y + (identity.frame.size.height - 10) / 2.0, 50, 10) numberOfStar:5];
+        [back addSubview:star];
+        [star setScore:[[follow objectForKey:@"kopubility"] floatValue]];
+        [star setuserInteractionEnabled:NO];
+        
+        [identity setImage:[UIImage imageNamed:@"实名认证"]];
+    }
+    
+    levelImg.image = [UIImage imageNamed:[NSString stringWithFormat:@"等级是%@",[follow objectForKey:@"level"]]];
+
+    identity.frame = CGRectMake(levelImg.frame.origin.x+levelImg.frame.size.width+5, levelImg.frame.origin.y, 15, 15);
+//    TQStarRatingView *star = [[TQStarRatingView alloc] initWithFrame:CGRectMake(level.frame.origin.x + level.frame.size.width + 3, level.frame.origin.y + (level.frame.size.height - 10) / 2.0, 50, 10) numberOfStar:5];
+//    [back addSubview:star];
+//    [star setScore:[[follow objectForKey:@"kopubility"] floatValue]];
+//    [star setuserInteractionEnabled:NO];
+    toshowTagList *tagList = [[toshowTagList alloc] initWithFrame:CGRectMake(0,0,back.frame.size.width - 50,0)];
+    NSArray *skills = [follow objectForKey:@"skills"];
+    NSMutableArray *array = [[NSMutableArray alloc] init];
+    for (NSInteger i = 0; i < [skills count]; i++) {
+        NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+        [dic setObject:[skills objectAtIndex:i] forKey:@"title"];
+        [dic setObject:[UIColor colorWithRed:156.0 / 255 green:156.0 / 255 blue:153.0 / 255 alpha:1] forKey:@"titleColor"];
+        [dic setObject:[UIColor whiteColor] forKey:@"backgroundColor"];
+        [dic setObject:RGBA(248.0, 140.0, 86, 1.0) forKey:@"borderColor"];
+        [dic setObject:@"1.0" forKey:@"borderWidth"];
+        [array addObject:dic];
+
+    }
+    [tagList addTags:array];
+    
+    UIView *skillBG = [[UIView alloc] initWithFrame:CGRectMake(50, 48, self.view.frame.size.width - 60, tagList.heightFinal)];
+    skillBG.backgroundColor = RGBCOLOR(245, 245, 245);
+    CGRect r = [tagList frame];
+    r.size.height += tagList.heightFinal;
+    tagList.frame = r;
+    [skillBG addSubview:tagList];
+    CGRect r1 = [cell frame];
+    r1.size.height += tagList.heightFinal;
+    cell.frame = r1;
+    [cell addSubview:skillBG];
+    if (tableView == self.searchDisplayController.searchResultsTableView) {
+        if(indexPath.row == 0){
+            if ([searchResults count] == 1) {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight | UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+//                back.layer.mask = maskLayer;
+//
+            } else {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+//                back.layer.mask = maskLayer;
+            }
+        }
+        if(indexPath.row == [searchResults count] - 1) {
+            if ([searchResults count] == 1) {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight | UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+//                back.layer.mask = maskLayer;
+            } else {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+//                back.layer.mask = maskLayer;
+            }
+        }
+    }
+    else if(tableView == self.table){
+        if(indexPath.row == 0){
+            if ([dataArray count] == 1) {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight | UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+//                back.layer.mask = maskLayer;
+            } else {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+//                back.layer.mask = maskLayer;
+            }
+        }
+        if(indexPath.row == [dataArray count] - 1) {
+            if ([dataArray count] == 1) {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerTopLeft | UIRectCornerTopRight | UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+//                back.layer.mask = maskLayer;
+            } else {
+                UIBezierPath *maskPath = [UIBezierPath bezierPathWithRoundedRect:back.bounds byRoundingCorners:UIRectCornerBottomLeft | UIRectCornerBottomRight cornerRadii:CGSizeMake(10, 10)];
+                CAShapeLayer *maskLayer = [[CAShapeLayer alloc] init];
+                maskLayer.frame = back.bounds;
+                maskLayer.path = maskPath.CGPath;
+//                back.layer.mask = maskLayer;
+            }
+        }
+    }
+    return cell;
+}
+
+#pragma mark - UITaleview delegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (tableView == self.searchDisplayController.searchResultsTableView) {
+        NSDictionary *user = [searchResults objectAtIndex:indexPath.row];
+        ghunterUserCenterViewController *userCenter = [[ghunterUserCenterViewController alloc] init];
+        userCenter.uid = [user objectForKey:UID];
+        [self.navigationController pushViewController:userCenter animated:YES];
+    }else {
+        NSDictionary *user = [dataArray objectAtIndex:indexPath.row];
+        ghunterUserCenterViewController *userCenter = [[ghunterUserCenterViewController alloc] init];
+        userCenter.uid = [user objectForKey:UID];
+        [self.navigationController pushViewController:userCenter animated:YES];
+    }
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [self tableView:tableView cellForRowAtIndexPath:indexPath];
+    return cell.frame.size.height;
+}
+
+#pragma mark - UISearchDisplayDelegate
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText {
+    searchResults = [[NSMutableArray alloc]init];
+    if (mySearchBar.text.length>0&&![ChineseInclude isIncludeChineseInString:mySearchBar.text]) {
+        for (NSInteger i=0; i<dataArray.count; i++) {
+            NSDictionary *dic = dataArray[i];
+            if ([ChineseInclude isIncludeChineseInString:[dic objectForKey:@"username"]]) {
+                NSString *tempPinYinStr = [PinYinForObjc chineseConvertToPinYin:[dic objectForKey:@"username"]];
+                NSString *tempPinYinHeadStr = [PinYinForObjc chineseConvertToPinYinHead:[dic objectForKey:@"username"]];
+                NSRange titleResult=[tempPinYinStr rangeOfString:mySearchBar.text options:NSCaseInsensitiveSearch];
+                NSRange titleResult1=[tempPinYinHeadStr rangeOfString:mySearchBar.text options:NSCaseInsensitiveSearch];
+                if (titleResult.length > 0 || titleResult1.length > 0) {
+                    [searchResults addObject:dataArray[i]];
+                }
+            }
+            else {
+                NSRange titleResult=[[dic objectForKey:@"username"] rangeOfString:mySearchBar.text options:NSCaseInsensitiveSearch];
+                if (titleResult.length>0) {
+                    [searchResults addObject:dataArray[i]];
+                }
+            }
+        }
+    } else if (mySearchBar.text.length>0&&[ChineseInclude isIncludeChineseInString:mySearchBar.text]) {
+        for (NSDictionary *tempDic in dataArray) {
+            NSRange titleResult=[[tempDic objectForKey:@"username"] rangeOfString:mySearchBar.text options:NSCaseInsensitiveSearch];
+            if (titleResult.length>0) {
+                [searchResults addObject:tempDic];
+            }
+        }
+    }
+}
+
+#pragma mark - ASIHttpRequest
+
+-(void)requestFinished:(ASIHTTPRequest *)request
+{
+    int responseCode=[request responseStatusCode];
+    NSError *error;
+    NSData *responseData = [request responseData];
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:responseData options:NSJSONReadingMutableLeaves error:&error];
+    NSString *error_number = [dic objectForKey:ERROR];
+    if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_GET_MY_FOLLOW] || [[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_GET_MY_FRIEND] || [[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_GET_HUNTER_FANS] || [[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_GET_HUNTER_FOLLOW]){
+        
+        [self endLoad];
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            [dataArray removeAllObjects];
+            page = 2;
+            NSArray *array = [dic valueForKey:@"user"];
+            // NSLog(@"array++++++%@",array);
+            [dataArray addObjectsFromArray:array];
+            [self.table reloadData];
+        }else if([dic objectForKey:@"msg"]){
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        }else{
+            [ghunterRequester noMsg];
+        }
+    }else if ([[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_LOADMORE_MY_FOLLOW] || [[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_LOADMORE_MY_FRIEND] || [[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_LOADMORE_HUNTER_FANS] || [[request.userInfo objectForKey:REQUEST_TYPE] isEqual: REQUEST_FOR_LOADMORE_HUNTER_FOLLOW]){
+        if(responseCode==200 && [error_number integerValue] == 0)
+        {
+            page++;
+            NSArray *array = [dic valueForKey:@"user"];
+            [dataArray addObjectsFromArray:array];
+            [self.table reloadData];
+        }else if([dic objectForKey:@"msg"]){
+            [ghunterRequester wrongMsg:[dic objectForKey:@"msg"]];
+        }else{
+            [ghunterRequester noMsg];
+        }
+        self.table.pullTableIsLoadingMore = NO;
+    }
+}
+
+-(void)requestFailed:(ASIHTTPRequest *)request
+{
+    self.table.pullTableIsLoadingMore = NO;
+    [ghunterRequester performSelectorOnMainThread:@selector(showTip:) withObject:@"网络连接异常" waitUntilDone:false];
+}
+
+#pragma mark - PullTableViewDelegate
+
+- (void)pullTableViewDidTriggerRefresh:(PullTableView *)pullTableView
+{
+    [self performSelector:@selector(refreshTable) withObject:nil afterDelay:0.1f];
+}
+
+- (void)pullTableViewDidTriggerLoadMore:(PullTableView *)pullTableView
+{
+    [self performSelector:@selector(loadMoreDataToTable) withObject:nil afterDelay:0.1f];
+}
+
+#pragma mark - Refresh and load more methods
+
+- (void)refreshTable
+{
+    page = 1;
+    if(self.type == 0){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_MY_FOLLOW withUserInfo:REQUEST_FOR_GET_MY_FOLLOW withString:[NSString stringWithFormat:@"?page=%zd&api_session_id=%@",page,[ghunterRequester getUserInfo:API_SESSION_ID]]];
+    }else if (self.type == 1){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_MY_FRIEND withUserInfo:REQUEST_FOR_GET_MY_FRIEND withString:[NSString stringWithFormat:@"?page=%zd&api_session_id=%@",page,[ghunterRequester getUserInfo:API_SESSION_ID]]];
+    } else if (self.type == 2){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_HUNTER_FANS withUserInfo:REQUEST_FOR_GET_HUNTER_FANS withString:[NSString stringWithFormat:@"?page=%zd&uid=%@",page,self.uid]];
+    } else if (self.type == 3){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_HUNTER_FOLLOW withUserInfo:REQUEST_FOR_GET_HUNTER_FOLLOW withString:[NSString stringWithFormat:@"?page=%zd&uid=%@",page,self.uid]];
+    }
+    
+    
+    self.table.pullTableIsRefreshing = NO;
+}
+
+- (void)loadMoreDataToTable
+{
+    if(self.type == 0){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_MY_FOLLOW withUserInfo:REQUEST_FOR_LOADMORE_MY_FOLLOW withString:[NSString stringWithFormat:@"?page=%zd&api_session_id=%@",page,[ghunterRequester getUserInfo:API_SESSION_ID]]];
+    }else if (self.type == 1){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_MY_FRIEND withUserInfo:REQUEST_FOR_LOADMORE_MY_FRIEND withString:[NSString stringWithFormat:@"?page=%zd&api_session_id=%@",page,[ghunterRequester getUserInfo:API_SESSION_ID]]];
+    } else if (self.type == 2){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_HUNTER_FANS withUserInfo:REQUEST_FOR_LOADMORE_HUNTER_FANS withString:[NSString stringWithFormat:@"?page=%zd&uid=%@",page,self.uid]];
+    } else if (self.type == 3){
+        [ghunterRequester getwithDelegate:self withUrl:URL_GET_HUNTER_FOLLOW withUserInfo:REQUEST_FOR_LOADMORE_HUNTER_FOLLOW withString:[NSString stringWithFormat:@"?page=%zd&uid=%@",page,self.uid]];
+    }
+    
+}
+
+#pragma mark - Custom Methods
+
+- (IBAction)back:(id)sender {
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+#pragma mark - UISearchbar delegate
+- (BOOL)searchBarShouldBeginEditing:(UISearchBar *)searchBar {
+    [UIView animateWithDuration:0.2
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseIn
+                     animations:^{
+                         self.topVIew.alpha = 0;
+                         CGRect frame = self.table.frame;
+                         frame.origin.y = 20.0;
+                         self.table.frame = frame;
+                     }
+                     completion:^(BOOL finished) {
+                     }];
+    return YES;
+}
+
+- (BOOL)searchBarShouldEndEditing:(UISearchBar *)searchBar {
+    [UIView animateWithDuration:0.2
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseIn
+                     animations:^{
+                         self.topVIew.alpha = 1.0;
+                     }
+                     completion:^(BOOL finished) {
+                     }];
+    return YES;
+}
+
+- (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
+    [UIView animateWithDuration:0.34
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseIn
+                     animations:^{
+                         CGRect frame = self.table.frame;
+                         frame.origin.y = 64.0;
+                         self.table.frame = frame;
+                     }
+                     completion:^(BOOL finished) {
+                     }];
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.navigationBar.alpha = 0;
+}
+
+- (void)startLoad{
+    self.loadingView = [[ghunterLoadingView alloc] initWithSuperView:self.view withGif:@"loading2" withIndicator:@"正在加载..."];
+    [self.loadingView startAnimition];
+}
+
+- (void)endLoad{
+    [self.loadingView inValidate];
+}
+
+@end

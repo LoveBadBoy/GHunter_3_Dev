@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9531" systemVersion="14F27" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9529"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="123" id="2go-sL-t1b">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="123"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="2go-sL-t1b" id="FYI-vV-di5">
+                <rect key="frame" x="0.0" y="0.0" width="375" height="122.5"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <view tag="15" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iN0-l3-epB">
+                        <rect key="frame" x="5" y="7" width="170" height="47"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" tag="11" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g01-Bi-jaB">
+                                <rect key="frame" x="2" y="0.0" width="45" height="45"/>
+                            </imageView>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="16" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="name" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ABS-4t-pC3">
+                                <rect key="frame" x="58" y="0.0" width="84" height="16"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="需要:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bcm-ex-hkn">
+                                <rect key="frame" x="60" y="24" width="33" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" red="0.59999999999999998" green="0.59999999999999998" blue="0.59999999999999998" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="14" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="飞毛腿" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ez0-f0-HA6">
+                                <rect key="frame" x="96" y="24" width="55" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="47" id="1wr-Rp-57g"/>
+                        </constraints>
+                    </view>
+                    <view tag="45" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wnS-0g-crP">
+                        <rect key="frame" x="195" y="70" width="170" height="44"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" tag="41" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iJG-Ut-Yvo">
+                                <rect key="frame" x="3" y="0.0" width="45" height="45"/>
+                            </imageView>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="46" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="name" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5fi-lQ-iw5">
+                                <rect key="frame" x="56" y="0.0" width="88" height="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="需要:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kCv-kd-hEO">
+                                <rect key="frame" x="58" y="26" width="33" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" red="0.59999999999999998" green="0.59999999999999998" blue="0.59999999999999998" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="44" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="飞毛腿" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="D70-lJ-yIM">
+                                <rect key="frame" x="96" y="26" width="55" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    </view>
+                    <view tag="35" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TSK-Dg-Fwp">
+                        <rect key="frame" x="5" y="70" width="170" height="45"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" tag="31" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xLu-Gj-U5W">
+                                <rect key="frame" x="6" y="0.0" width="45" height="45"/>
+                            </imageView>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="36" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="name" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uYS-je-8HC">
+                                <rect key="frame" x="58" y="3" width="83" height="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="需要:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hlO-3S-fhe">
+                                <rect key="frame" x="60" y="26" width="33" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" red="0.59999999999999998" green="0.59999999999999998" blue="0.59999999999999998" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="34" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="飞毛腿" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3ja-x1-wbD">
+                                <rect key="frame" x="96" y="26" width="55" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                    </view>
+                    <view tag="25" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KKg-3b-ESz">
+                        <rect key="frame" x="195" y="7" width="170" height="47"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" tag="21" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="5Xv-G7-Pvb">
+                                <rect key="frame" x="3" y="0.0" width="45" height="45"/>
+                            </imageView>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="26" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="name" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="s5f-2G-879">
+                                <rect key="frame" x="56" y="-1" width="88" height="18"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="需要:" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jdU-U4-j51">
+                                <rect key="frame" x="58" y="23" width="35" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                <color key="textColor" red="0.59999999999999998" green="0.59999999999999998" blue="0.59999999999999998" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="24" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="飞毛腿" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hkY-cJ-HhL">
+                                <rect key="frame" x="96" y="23" width="55" height="15"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="47" id="0kf-px-nFO"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="wnS-0g-crP" firstAttribute="top" secondItem="TSK-Dg-Fwp" secondAttribute="top" id="3ej-M9-lB0"/>
+                    <constraint firstItem="iN0-l3-epB" firstAttribute="leading" secondItem="FYI-vV-di5" secondAttribute="leadingMargin" constant="-3" id="52E-4m-x4i"/>
+                    <constraint firstItem="wnS-0g-crP" firstAttribute="centerY" secondItem="TSK-Dg-Fwp" secondAttribute="centerY" id="BBg-Si-tSA"/>
+                    <constraint firstItem="KKg-3b-ESz" firstAttribute="trailing" secondItem="wnS-0g-crP" secondAttribute="trailing" id="CIb-e9-QvE"/>
+                    <constraint firstItem="KKg-3b-ESz" firstAttribute="leading" secondItem="wnS-0g-crP" secondAttribute="leading" id="FDp-J9-o5B"/>
+                    <constraint firstItem="KKg-3b-ESz" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="trailing" constant="20" id="JB2-pb-E7n"/>
+                    <constraint firstAttribute="bottomMargin" secondItem="wnS-0g-crP" secondAttribute="bottom" constant="0.5" id="YHm-yP-lM9"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="KKg-3b-ESz" secondAttribute="trailing" constant="2" id="ZB9-JF-5l2"/>
+                    <constraint firstItem="TSK-Dg-Fwp" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="ah5-3b-dBl"/>
+                    <constraint firstItem="KKg-3b-ESz" firstAttribute="top" secondItem="FYI-vV-di5" secondAttribute="topMargin" constant="-1" id="eV4-fT-Ohh"/>
+                    <constraint firstItem="wnS-0g-crP" firstAttribute="top" secondItem="KKg-3b-ESz" secondAttribute="bottom" constant="16" id="lr2-nf-wbz"/>
+                    <constraint firstItem="KKg-3b-ESz" firstAttribute="width" secondItem="iN0-l3-epB" secondAttribute="width" id="upN-Mg-z1g"/>
+                    <constraint firstItem="wnS-0g-crP" firstAttribute="leading" secondItem="TSK-Dg-Fwp" secondAttribute="trailing" constant="20" id="xOU-QS-0Qx"/>
+                    <constraint firstItem="KKg-3b-ESz" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="z8h-sD-INg"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+            <point key="canvasLocation" x="187.5" y="232.5"/>
+        </tableViewCell>
+    </objects>
+</document>

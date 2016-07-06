@@ -1,0 +1,24 @@
+//
+//  ghuntersearchViewController.h
+//  ghunter
+//
+//  Created by chensonglu on 14-9-16.
+//  Copyright (c) 2014年 ghunter. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "ghunterRequester.h"
+#import "PullTableView.h"
+#import "OHAttributedLabel.h"
+#import "TQStarRatingView.h"
+#import "showTag.h"
+#import "ghuntertaskViewController.h"
+
+@interface ghuntersearchViewController : UIViewController<UITextFieldDelegate,UITableViewDataSource,UITableViewDelegate,PullTableViewDelegate>{
+    PullTableView *searchTable;
+}
+@property(nonatomic)NSUInteger type;
+@property(nonatomic)NSUInteger taskpage;
+@property(nonatomic)NSUInteger hunterpage;
+@property(nonatomic)NSUInteger skillpage;
+@end

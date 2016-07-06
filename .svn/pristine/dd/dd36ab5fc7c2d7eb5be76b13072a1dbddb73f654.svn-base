@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>C3134227-4C35-4791-AC9A-0E51FAD47E4D</string>
+	<key>IDESourceControlProjectName</key>
+	<string>ghunter</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>f2eb8af0-274c-44c2-a484-e59ff8e3ee0a++8523</key>
+		<string>svn://119.147.91.55/ghunter/ios/Trunk/GHunter</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>ghunter.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>f2eb8af0-274c-44c2-a484-e59ff8e3ee0a++8523</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectRepositoryRootDictionary</key>
+	<dict>
+		<key>f2eb8af0-274c-44c2-a484-e59ff8e3ee0a++8523</key>
+		<string>svn://119.147.91.55/ghunter</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>svn://119.147.91.55/ghunter/ios/Trunk/GHunter/ghunter.xcodeproj</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>f2eb8af0-274c-44c2-a484-e59ff8e3ee0a++8523</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.subversion</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>f2eb8af0-274c-44c2-a484-e59ff8e3ee0a++8523</string>
+			<key>IDESourceControlWCCName</key>
+			<string>GHunter</string>
+		</dict>
+	</array>
+</dict>
+</plist>

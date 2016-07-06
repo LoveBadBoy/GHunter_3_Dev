@@ -1,0 +1,439 @@
+//  Created by mac－党倬宇 on 15/7/9.
+//  Copyright (c) 2015年 dang. All rights reserved.
+//
+
+#import "QRcodeViewController.h"
+#import <AVFoundation/AVFoundation.h>
+
+@interface QRcodeViewController ()<AVCaptureMetadataOutputObjectsDelegate,UIAlertViewDelegate>
+
+{
+    NSTimer *timer;
+    UIImageView * _line;
+    int num;
+    BOOL upOrdown; //判断上下移动
+    UIButton *Capture;
+    UIButton *guanbi;
+   
+}
+@property (strong,nonatomic)AVCaptureDevice * device;
+@property (strong,nonatomic)AVCaptureDeviceInput * input;
+@property (strong,nonatomic)AVCaptureMetadataOutput * output;
+@property (strong,nonatomic)AVCaptureSession * session;
+@property (strong,nonatomic)AVCaptureVideoPreviewLayer * preview;
+
+@end
+
+@implementation QRcodeViewController
+-(void)viewDidAppear:(BOOL)animated{
+     [_session startRunning];
+    
+    self.tabBarController.tabBar.hidden = YES;
+    self.navigationController.navigationBarHidden = NO;
+    self.navigationController.navigationBar.alpha = 0;
+        [self.navigationController.view sendSubviewToBack:self.navigationController.navigationBar];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+    
+}
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    
+    UIView *grayview = [[UIView alloc]initWithFrame:CGRectMake(0, 0, mainScreenWidth, 70)];
+    grayview.backgroundColor = [UIColor grayColor];
+    grayview.alpha = 0.7;
+    [self.view addSubview:grayview];
+    
+    Capture = [[UIButton alloc]initWithFrame:CGRectMake(15, 25, 30, 30)];
+    [Capture setImage:[UIImage imageNamed:@"Light"] forState:(UIControlStateNormal)];
+    [Capture addTarget:self action:@selector(capture:) forControlEvents:(UIControlEventTouchUpInside)];
+    Capture.hidden = NO;
+    [grayview addSubview:Capture];
+    
+    guanbi = [[UIButton alloc]initWithFrame:CGRectMake(15, 25, 30, 30)];
+   [guanbi setImage:[UIImage imageNamed:@"Light"] forState:(UIControlStateNormal)];    guanbi.hidden = YES;
+    [guanbi addTarget:self action:@selector(guanbi:) forControlEvents:(UIControlEventTouchUpInside)];
+    [grayview addSubview:guanbi];
+    
+    UILabel * labIntroudction= [[UILabel alloc] initWithFrame:CGRectMake(55,15, mainScreenWidth-55, 50)];
+    labIntroudction.backgroundColor = [UIColor clearColor];
+    labIntroudction.numberOfLines=0;
+    labIntroudction.font =[UIFont systemFontOfSize:12];
+    labIntroudction.textAlignment = NSTextAlignmentCenter;
+    labIntroudction.textColor=[UIColor whiteColor];
+    labIntroudction.text=@"将条形码或二维码置于取景框内系统会自动扫描";
+    [grayview addSubview:labIntroudction];
+    
+//    //新加功能，选择照片中的二维码-------------------------------------------------------
+//    UIButton *choosePhotoButt = [[UIButton alloc]initWithFrame:CGRectMake(mainScreenWidth-35, 25, 30, 30)];
+//    [choosePhotoButt setImage:[UIImage imageNamed:@"Light"] forState:UIControlStateNormal];
+//    [choosePhotoButt addTarget:self action:@selector(choose:) forControlEvents:UIControlEventTouchUpInside];
+//    [grayview addSubview:choosePhotoButt];
+//    //---------------------------------------------------------------------------------------
+    
+    [self setupCamera];
+    
+   
+}
+-(void)back:(UIButton *)btn{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+- (void)setupCamera
+{
+    //新代码部分，判断应用是否有使用相机的权限--------------------------------
+    NSString *mediaType = AVMediaTypeVideo;
+    AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];
+    if (authStatus == ALAuthorizationStatusRestricted || authStatus == ALAuthorizationStatusDenied) {
+        NSLog(@"相机权限受限");
+        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"未获得授权使用摄像头" message:@"请在iOS“设置”/“相机”中打开" delegate:self cancelButtonTitle:@"知道了" otherButtonTitles:nil, nil];
+        self.view.backgroundColor = [UIColor blackColor];
+        
+        [alertView show];
+        return;
+        
+    }
+    //----------------------------------------
+
+    
+//    
+//    ZBarReaderView *readerView = [ZBarReaderView new];
+//    //自定义大小
+//    readerView.readerDelegate = self;
+//    readerView.frame = CGRectMake((mainScreenWidth-230)/2.0, (mainScreenheight-230)/2.0, 230, 230);
+//    readerView.readerDelegate = self;
+//    
+//    [self.view addSubview:readerView];
+//    
+//    ZBarImageScanner *scanner = readerView.scanner;
+//    [scanner setSymbology:ZBAR_I25 config:ZBAR_CFG_ENABLE to:0];
+//    
+//    [readerView start];
+    
+    
+   
+    // Device
+    _device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    NSError * error;
+    // Input
+    _input = [AVCaptureDeviceInput deviceInputWithDevice:self.device error:&error];
+    if (error) {
+        NSLog(@"没有摄像头-%@", error.localizedDescription);
+        return;
+    }
+    // Output
+    _output = [[AVCaptureMetadataOutput alloc]init];
+    [_output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
+    [ _output setRectOfInterest : CGRectMake (0.2, 0.2, 0.6, 0.6)];
+    
+    // Session
+    _session = [[AVCaptureSession alloc]init];
+    [_session setSessionPreset:AVCaptureSessionPresetHigh];
+    if ([_session canAddInput:self.input])
+    {
+        [_session addInput:self.input];
+    }
+    
+    if ([_session canAddOutput:self.output])
+    {
+        [_session addOutput:self.output];
+    }
+    
+    //二维码
+     //     条码类型 AVMetadataObjectTypeQRCode
+     if ((self.output.metadataObjectTypes = [NSArray arrayWithObject:AVMetadataObjectTypeQRCode])) {
+     //        self.output.metadataObjectTypes = [NSArray arrayWithObject:AVMetadataObjectTypeQRCode];
+     self.output.metadataObjectTypes = [NSArray arrayWithObject:AVMetadataObjectTypeQRCode];
+     }else{
+     NSLog(@"此设备不支持扫描二维码");
+     return;
+     }
+     
+    
+    // 条码类型 AVMetadataObjectTypeQRCode
+    if ([_output.availableMetadataObjectTypes containsObject:
+         AVMetadataObjectTypeQRCode]||
+        [_output.availableMetadataObjectTypes containsObject:
+         AVMetadataObjectTypeCode128Code]) {
+            _output.metadataObjectTypes =[NSArray arrayWithObjects:
+                                          AVMetadataObjectTypeQRCode,
+                                          AVMetadataObjectTypeCode39Code,
+                                          AVMetadataObjectTypeCode128Code,
+                                          AVMetadataObjectTypeCode39Mod43Code,
+                                          AVMetadataObjectTypeEAN13Code,
+                                          AVMetadataObjectTypeEAN8Code,
+                                          AVMetadataObjectTypeCode93Code, nil];
+        }
+    
+    //    _output.metadataObjectTypes =@[AVMetadataObjectTypeQRCode];
+    
+    // Preview
+    _preview =[AVCaptureVideoPreviewLayer layerWithSession:self.session];
+    _preview.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    _preview.frame =CGRectMake(0,0,mainScreenWidth,mainScreenheight);
+    [self.view.layer insertSublayer:self.preview atIndex:0];
+    
+    // Start
+    [_session startRunning];
+    
+    upOrdown = NO;
+    num =0;
+ 
+    UIImageView * imageView = [[UIImageView alloc]initWithFrame:CGRectMake(40, 150, mainScreenWidth-80, mainScreenWidth-80)];
+    imageView.backgroundColor = [UIColor clearColor];
+    [self.view addSubview:imageView];
+    
+    UIImageView *code1 = [[UIImageView alloc]initWithFrame:CGRectMake(mainScreenWidth-280, 370, 20, 20)];
+    code1.image = [UIImage imageNamed:@"code1"];
+    [self.view addSubview:code1];
+    UIImageView *code2 = [[UIImageView alloc]initWithFrame:CGRectMake(mainScreenWidth-50, 150, 20, 20)];
+    code2.image = [UIImage imageNamed:@"code2"];
+    [self.view addSubview:code2];
+    UIImageView *code3 = [[UIImageView alloc]initWithFrame:CGRectMake(mainScreenWidth-280, 150, 20, 20)];
+    code3.image = [UIImage imageNamed:@"code3"];
+    [self.view addSubview:code3];
+    UIImageView *code4 = [[UIImageView alloc]initWithFrame:CGRectMake(mainScreenWidth-50, 370, 20, 20)];
+    code4.image = [UIImage imageNamed:@"code4"];
+    [self.view addSubview:code4];
+    
+
+    
+    
+    _line = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, mainScreenWidth-80, 2)];
+    _line.image = [UIImage imageNamed:@"line.png"];
+    [imageView addSubview:_line];
+    
+    timer = [NSTimer scheduledTimerWithTimeInterval:0.02 target:self selector:@selector(animation1) userInfo:nil repeats:YES];
+    
+    
+
+    
+    UIView *layerview = [[UIView alloc]initWithFrame:CGRectMake(0, mainScreenheight-70, mainScreenWidth, 70)];
+    layerview.backgroundColor = [UIColor grayColor];
+    layerview.alpha = 0.7;
+    [self.view addSubview:layerview];
+    
+    UILabel * labIntroudction= [[UILabel alloc] initWithFrame:CGRectMake(45,10, mainScreenWidth-45, 50)];
+    labIntroudction.backgroundColor = [UIColor clearColor];
+    labIntroudction.numberOfLines=0;
+    labIntroudction.font =[UIFont systemFontOfSize:12];
+    labIntroudction.textAlignment = NSTextAlignmentCenter;
+    labIntroudction.textColor=[UIColor whiteColor];
+    labIntroudction.text=@"建议与镜头保持10cm距离，尽量避免光和阴影";
+    [layerview addSubview:labIntroudction];
+    
+    UIButton *Cancelbtn = [[UIButton alloc]initWithFrame:CGRectMake(5, 20, 45, 25)];
+    [Cancelbtn setTitle:@"取消" forState:(UIControlStateNormal)];
+    Cancelbtn.titleLabel.font = [UIFont systemFontOfSize:13];
+    [Cancelbtn setTitleColor:[UIColor blackColor] forState:(UIControlStateNormal)];
+    [Cancelbtn addTarget:self action:@selector(cancelbtn:) forControlEvents:(UIControlEventTouchUpInside)];
+    Cancelbtn.backgroundColor =[UIColor whiteColor];
+    [layerview addSubview:Cancelbtn];
+    
+}
+
+-(void)cancelbtn:(UIButton *)btn{
+    [self.navigationController popViewControllerAnimated:YES];
+}
+// 处理二维码扫描
+-(void)handleDecode:(NSString *)qrstr{
+    NSString *siteUrl = qrstr;
+    NSRange range = [siteUrl rangeOfString:@"http://"];
+    NSRange range02 = [siteUrl rangeOfString:@"https://"];
+    if (range.length == 0 && range02.length == 0) {
+        siteUrl = [NSString stringWithFormat:@"http://%@", siteUrl];
+    }
+    
+    NSString *msgMatch = @"http:\\/\\/apiadmin\\.imgondar\\.com\\/mobile\\/task\\/view\\?tid=(\\d+).*?";
+    NSArray *msgResult = [siteUrl arrayOfCaptureComponentsMatchedByRegex:msgMatch];
+    NSLog(@"msgResult: %@", msgResult);
+    NSLog(@"matchCount: %zd", [msgResult count]);
+    
+    if ([msgResult count] == 1) {
+        NSString *tid = [[msgResult objectAtIndex:0] objectAtIndex:1];
+        ghuntertaskViewController *taskView = [[ghuntertaskViewController alloc] init];
+        taskView.tid = tid;
+        taskView.callBackBlock = ^{};
+        [self.navigationController pushViewController:taskView animated:YES];
+        return;
+    }
+    
+    NSString *skillMatch = @"http:\\/\\/apiadmin\\.imgondar\\.com\\/mobile\\/skillshow\\/view\\?id=(\\d+).*?";
+    NSArray *skillResult = [siteUrl arrayOfCaptureComponentsMatchedByRegex:skillMatch];
+    if ([skillResult count] == 1) {
+        NSString *sid = [[skillResult objectAtIndex:0] objectAtIndex:1];
+        ghunterSkillViewController *skillView = [[ghunterSkillViewController alloc] init];
+        skillView.skillid = sid;
+        skillView.callBackBlock = ^{};
+        [self.navigationController pushViewController:skillView animated:YES];
+        return;
+    }
+    
+    NSString *userMatch = @"http:\\/\\/apiadmin\\.imgondar\\.com\\/mobile\\/user\\/view\\?uid=(\\d+).*?";
+    NSArray *userResult = [siteUrl arrayOfCaptureComponentsMatchedByRegex:userMatch];
+    if ([userResult count] == 1) {
+        NSString *uid = [[userResult objectAtIndex:0] objectAtIndex:1];
+        ghunterUserCenterViewController *userView = [[ghunterUserCenterViewController alloc] init];
+        userView.uid = uid;
+        [self.navigationController pushViewController:userView animated:YES];
+        return;
+    }
+    
+    NSString *target1 = @"apiadmin.imgondar.com";
+    NSString *target2 = @"mob.imgondar.com";
+    NSRange range1 = [siteUrl rangeOfString:target1];
+    NSRange range2 = [siteUrl rangeOfString:target2];
+    if (range1.length!=0 || range2.length!=0) {
+        NSRange range3 = [siteUrl rangeOfString:@"?"];
+        if (range3.length!=0) {
+            siteUrl = [siteUrl stringByAppendingString:[NSString stringWithFormat:@"&api_token=%@&api_session_id=%@",API_TOKEN_NUM, [ghunterRequester getApi_session_id]]];
+        }else{
+            siteUrl = [siteUrl stringByAppendingString:[NSString stringWithFormat:@"?api_token=%@&api_session_id=%@", API_TOKEN_NUM, [ghunterRequester getApi_session_id]]];
+        }
+        // 转换中文编码，转成字符
+        siteUrl = [siteUrl stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
+    }
+    
+    ghunterWebViewController *webView = [[ghunterWebViewController alloc] init];
+    webView.webTitle = [NSMutableString stringWithString:APP_NAME];
+    webView.urlPassed = [NSMutableString stringWithString:siteUrl];
+    [self.navigationController pushViewController:webView animated:YES];
+}
+
+//关闭闪光灯
+-(void)guanbi:(UIButton *)btn{
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    [device setTorchMode:AVCaptureTorchModeOff];
+    [device setFlashMode:AVCaptureFlashModeOff];
+    Capture.hidden = NO;
+    guanbi.hidden = YES;
+    
+}
+//打开闪光灯
+-(void)capture:(UIButton *)btn{
+    Capture.hidden = YES;
+    guanbi.hidden = NO;
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    
+    AVCaptureSession *session = [[AVCaptureSession alloc] init];
+    
+    // Create device input and add to current session
+    AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error: nil];
+    [session addInput:input];
+    
+    // Create video output and add to current session
+    AVCaptureVideoDataOutput *output = [[AVCaptureVideoDataOutput alloc] init];
+    [session addOutput:output];
+    
+    // Start session configuration
+    [session beginConfiguration];
+    [device lockForConfiguration:nil];
+    
+    // Set torch to on
+    [device setTorchMode:AVCaptureTorchModeOn];
+    [session commitConfiguration];
+    
+}
+
+
+/**
+ *  定时器，每0.01秒触发一次改变中间线条位置
+ */
+//注释一部分
+
+-(void)animation1
+{
+    NSInteger count = mainScreenWidth-80;
+    if (upOrdown == NO) {
+        num ++;
+        _line.frame = CGRectMake(0, count/100*num, mainScreenWidth-80, 2);
+        if (count/100*num == count)
+            upOrdown = YES;
+    }else {
+        num --;
+        _line.frame = CGRectMake(0, count/100*num, mainScreenWidth-80, 2);
+        if (num == 0)
+            upOrdown = NO;
+    }
+    
+}
+
+
+//TODO:UIAlertView 代理delegate
+-(void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
+{
+    //点击cancle重新开始扫描二维码
+    if(alertView.tag == 1)
+        [_session startRunning];
+    if (buttonIndex == 0) {
+//        ghunterDiscoverViewController *discoverView=[[ghunterDiscoverViewController alloc]init];
+        [self.navigationController popViewControllerAnimated:YES];
+    }
+}
+
+
+#pragma mark AVCaptureMetadataOutputObjectsDelegate
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputMetadataObjects:(NSArray *)metadataObjects fromConnection:(AVCaptureConnection *)connection
+{
+    //拿到扫描到的字符串信息，继续下一步的操作.....
+    NSString *stringValue;
+    
+    if ([metadataObjects count] >0)
+    {
+        AVMetadataMachineReadableCodeObject * metadataObject = [metadataObjects objectAtIndex:0];
+        stringValue = metadataObject.stringValue;
+    }
+    
+    [self handleDecode:stringValue];
+
+    [_session stopRunning];
+}
+
+
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+//-(void)readerView:(ZBarReaderView *)readerView didReadSymbols:(ZBarSymbolSet *)symbols fromImage:(UIImage *)image{
+//    
+//    ZBarSymbol *symbol = nil;
+//    for (symbol in symbols) {
+//        break;
+//        NSString *text = symbol.data;
+//        [self handleDecode:text];
+//    }
+//}
+//选择相册中二维码--------------------------------------------------------------------
+-(void)choose:(UIButton *)button
+{
+    UIActionSheet *actionSheet =[[UIActionSheet alloc]initWithTitle:nil delegate:self cancelButtonTitle:nil destructiveButtonTitle:@"相册" otherButtonTitles:nil, nil];
+    actionSheet.actionSheetStyle = UIActionSheetStyleDefault;
+    [actionSheet showInView:self.view];
+    
+    
+}
+//- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex NS_DEPRECATED_IOS(2_0, 8_3) __TVOS_PROHIBITED{
+//    if(buttonIndex==0){
+//        
+//        
+//    }else{
+//        
+//        NSLog(@"呵呵");
+//    }
+//    
+//}
+
+
+/*
+#pragma mark - Navigation
+
+// In a storyboard-based application, you will often want to do a little preparation before navigation
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    // Get the new view controller using [segue destinationViewController].
+    // Pass the selected object to the new view controller.
+}
+*/
+
+@end

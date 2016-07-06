@@ -1,0 +1,26 @@
+//
+//  ghunterselecthunterViewController.h
+//  ghunter
+//
+//  Created by chensonglu on 14-5-17.
+//  Copyright (c) 2014年 ghunter. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+#import "ghunterRequester.h"
+#import "showTag.h"
+#import "TQStarRatingView.h"
+#import "ghunterUserCenterViewController.h"
+#import "AFNetworkTool.h"
+
+@interface ghunterselecthunterViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,UIActionSheetDelegate, PullTableViewDelegate>{
+    PullTableView *selecthunterTable;
+    NSMutableArray *selecthunterArray;
+    ghunterLoadingView *loadingView;
+    NSInteger page;
+}
+@property(retain,nonatomic) NSString *tid;
+
+@property (nonatomic ,retain) ghunterLoadingView *loadingView;
+
+@end

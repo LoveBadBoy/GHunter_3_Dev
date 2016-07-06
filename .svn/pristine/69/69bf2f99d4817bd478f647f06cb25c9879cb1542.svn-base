@@ -1,0 +1,809 @@
+//
+//  ghunterMyCouponViewController.m
+//  ghunter
+//
+//  Created by ImGondar on 15/12/1.
+//  Copyright © 2015年 ghunter. All rights reserved.
+//
+
+#import "ghunterMyCouponViewController.h"
+#import "PullTableView.h"
+#import "ghunterRequester.h"
+#import "ghunterWebViewController.h"
+
+@interface ghunterMyCouponViewController ()
+{
+    
+    UIView * _buttomLineView;
+    NSInteger unusedPage;
+    NSInteger usedPage;
+    NSInteger overdatePage;
+    
+    UIScrollView * _btnScroll;
+    UIButton * _myTaskBtn;
+    UIButton * notDidSelBtn;
+    UIScrollView * dataScroll;
+//    NSMutableArray * dataArray;
+    PullTableView * unusedTableView;
+    PullTableView * usedTableView;
+    PullTableView * overdateTableView;
+    
+    NSMutableArray * unusedArray;
+    NSMutableArray * usedArray;
+    NSMutableArray * overdateArray;
+    
+    NSString * codeIdString;
+    NSInteger selectNum;
+    
+    int a;
+    int b;
+}
+@end
+
+@implementation ghunterMyCouponViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view from its nib.
+    self.view.backgroundColor = RGBCOLOR(247, 247, 247);
+    a = 0;
+    b = 0;
+    
+    unusedPage = 1;
+    usedPage = 1;
+    overdatePage = 1;
+    
+    unusedArray = [[NSMutableArray alloc] init];
+    usedArray = [[NSMutableArray alloc] init];
+    overdateArray = [[NSMutableArray alloc] init];
+    // 滚动条
+    _buttomLineView = [[UIView alloc] initWithFrame:CGRectMake(0, 31, mainScreenWidth / 3, 1.5)];
+    _buttomLineView.backgroundColor = RGBCOLOR(234, 85, 20);
+    
+    NSArray * titleArr = @[@"未使用", @"已使用", @"已过期"];
+    
+    // 滚动条
+    UIScrollView * buttonScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 64, mainScreenWidth, 34)];
+    buttonScroll.bounces = NO;
+    buttonScroll.contentSize = CGSizeMake(0, 0);
+    buttonScroll.showsHorizontalScrollIndicator = NO;
+    buttonScroll.showsVerticalScrollIndicator = NO;
+    buttonScroll.tag = 1010;
+    buttonScroll.delegate = self;
+    buttonScroll.pagingEnabled = NO;
+    buttonScroll.backgroundColor = [UIColor whiteColor];
+//    _btnScroll = buttonScroll;
+    
+    
+    float btnWidth = (mainScreenWidth - 1) / 3;
+    // 创建滑动条上的按钮
+    for (int i = 1; i <= 3; i++) {
+        
+        _myTaskBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        
+        _myTaskBtn.frame = CGRectMake((i - 1) * (btnWidth + 0.5), 1, btnWidth, 33);
+        
+        _myTaskBtn.backgroundColor = [UIColor whiteColor];
+//        float lineBtnX = i * btnWidth + (i - 1);
+        UIButton * lineBtn = [[UIButton alloc] initWithFrame:CGRectMake((i - 1) * btnWidth + (i - 2) * 0.5, 10, 0.5, 14)];
+        
+        lineBtn.alpha = 0.3;
+        lineBtn.backgroundColor = [UIColor grayColor];
+        [_myTaskBtn setTitle:[NSString stringWithFormat:@"%@", titleArr[i - 1]] forState:UIControlStateNormal];
+        _myTaskBtn.titleLabel.font = [UIFont systemFontOfSize:12];
+        [_myTaskBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        _myTaskBtn.userInteractionEnabled = YES;
+        _myTaskBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+        _myTaskBtn.tag = i + 1000;
+        [_myTaskBtn addTarget:self action:@selector(myTaskBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+        
+        if (_myTaskBtn.tag == 1001) {
+            notDidSelBtn = _myTaskBtn;
+            
+            [_myTaskBtn setTitleColor:RGBCOLOR(234, 85, 20) forState:UIControlStateNormal];
+        }
+        
+        lineBtn.backgroundColor = [UIColor grayColor];
+        
+        [buttonScroll addSubview:lineBtn];
+        [buttonScroll addSubview:_myTaskBtn];
+    }
+    
+    [buttonScroll addSubview:_buttomLineView];
+    [self.view addSubview:buttonScroll];
+    
+    
+    dataScroll = [[UIScrollView alloc]initWithFrame:CGRectMake(0, 64 + 36, mainScreenWidth, mainScreenheight - 64 - 36)];
+    dataScroll.contentSize = CGSizeMake(mainScreenWidth * 3, [UIScreen mainScreen].bounds.size.height - 20 - 44 - 36);
+    dataScroll.delegate = self;
+    dataScroll.showsHorizontalScrollIndicator = NO;
+    dataScroll.bounces = YES;
+    dataScroll.pagingEnabled = YES;
+    dataScroll.backgroundColor = RGBCOLOR(247, 247, 247);
+    [self.view addSubview:dataScroll];
+    
+    // 未使用
+    unusedTableView = [[PullTableView alloc]initWithFrame:CGRectMake(0, 0, mainScreenWidth, dataScroll.frame.size.height) style:UITableViewStylePlain];
+    unusedTableView.delegate = self;
+    unusedTableView.dataSource = self;
+    unusedTableView.pullDelegate = self;
+    unusedTableView.showsVerticalScrollIndicator = NO;
+    unusedTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    unusedTableView.backgroundColor = RGBCOLOR(247, 247, 247);
+    unusedTableView.tag = 1001;
+    dataScroll.scrollsToTop = YES;
+    dataScroll.bounces = NO;
+    [dataScroll addSubview:unusedTableView];
+    
+    // 已使用
+    usedTableView = [[PullTableView alloc]initWithFrame:CGRectMake(mainScreenWidth, 0, mainScreenWidth, dataScroll.frame.size.height) style:UITableViewStylePlain];
+    usedTableView.delegate = self;
+    usedTableView.dataSource = self;
+    usedTableView.pullDelegate = self;
+    usedTableView.showsVerticalScrollIndicator = NO;
+    usedTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    usedTableView.backgroundColor = RGBCOLOR(247, 247, 247);
+    usedTableView.tag = 1002;
+    [dataScroll addSubview:usedTableView];
+    
+    // 已过期
+    overdateTableView = [[PullTableView alloc]initWithFrame:CGRectMake(mainScreenWidth * 2, 0, mainScreenWidth, dataScroll.frame.size.height) style:UITableViewStylePlain];
+    overdateTableView.delegate = self;
+    overdateTableView.dataSource = self;
+    overdateTableView.pullDelegate = self;
+    overdateTableView.showsVerticalScrollIndicator = NO;
+    overdateTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    overdateTableView.backgroundColor = RGBCOLOR(247, 247, 247);
+    overdateTableView.tag = 1003;
+    [dataScroll addSubview:overdateTableView];
+    
+    [self GetMyCouponIsLoading:YES withunusedPage:unusedPage andStatus:@"unused"];
+}
+
+
+
+- (void)viewWillAppear:(BOOL)animated {
+    self.tabBarController.tabBar.hidden = YES;
+    self.navigationController.navigationBarHidden = YES;
+//    self.navigationController.navigationBar.alpha = 0;
+    
+    [self.navigationController.view sendSubviewToBack:self.navigationController.navigationBar];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent animated:YES];
+    [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationFade];
+    
+    
+}
+
+
+#pragma mark --- 数据解析
+// 未使用
+-(void)GetMyCouponIsLoading:(BOOL )isloading withunusedPage:(NSInteger)p andStatus:(NSString *)st{
+    if (isloading) {
+        [self startLoad];
+    }
+    
+    NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
+    
+    [parameters setObject:[NSString stringWithFormat:@"%zd", p] forKey:@"page"];
+    [parameters setObject:[NSString stringWithFormat:@"%@", st] forKey:@"status"];
+    
+    [AFNetworkTool httpRequestWithUrl:URL_MY_COUPON params:parameters success:^(NSData *data) {
+        if (isloading) {
+            [self endLoad];
+        }
+        NSError *error;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        
+        
+        if ([[result objectForKey:@"error"] integerValue] == 0) {
+            if (p == 1) {
+                [unusedArray removeAllObjects];
+                unusedPage = 2;
+                NSArray *array = [result valueForKey:@"couponcodes"];
+                
+                [unusedArray addObjectsFromArray:array];
+                [unusedTableView reloadData];
+                
+                unusedTableView.pullTableIsRefreshing = NO;
+
+                if (unusedArray.count == 0) {
+                    
+//                    [self myCouponDataImg:unusedTableView];
+                    unusedTableView.bounces = NO;
+                }else {
+                
+                    UIView * img = (UIView *)[self.view viewWithTag:10086];
+                    
+                    [img removeFromSuperview];
+                }
+                unusedTableView.pullTableIsRefreshing = YES;
+
+            }else{
+                unusedPage++;
+                NSArray *array = [result valueForKey:@"couponcodes"];
+                [unusedArray addObjectsFromArray:array];
+                [unusedTableView reloadData];
+                
+                unusedTableView.pullTableIsLoadingMore = NO;
+            }
+        }else{
+            
+//            [ProgressHUD show:[result objectForKey:@"msg"]];
+            if (unusedArray.count == 0) {
+                
+                [self myCouponDataImg:unusedTableView];
+            }
+            unusedTableView.pullTableIsLoadingMore = NO;
+        }
+    } fail:^{
+
+        if (isloading) {
+            [self endLoad];
+        }
+    }];
+}
+
+// 已使用
+-(void)GetMyCouponIsLoading:(BOOL )isloading withusedPage:(NSInteger)p andStatus:(NSString *)st{
+    if (isloading) {
+        [self startLoad];
+    }
+    
+    NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
+    
+    [parameters setObject:[NSString stringWithFormat:@"%zd", p] forKey:@"page"];
+    [parameters setObject:[NSString stringWithFormat:@"%@", st] forKey:@"status"];
+    
+    [AFNetworkTool httpRequestWithUrl:URL_MY_COUPON params:parameters success:^(NSData *data) {
+        if (isloading) {
+            [self endLoad];
+        }
+        NSError *error;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        
+        
+        
+        if ([[result objectForKey:@"error"] integerValue] == 0) {
+            if (p == 1) {
+                [usedArray removeAllObjects];
+                usedPage = 2;
+                NSArray *array = [result valueForKey:@"couponcodes"];
+                
+                [usedArray addObjectsFromArray:array];
+                [usedTableView reloadData];
+                if (usedArray.count == 0) {
+                    
+                    [self myCouponDataImg:usedTableView];
+                }
+                
+                usedTableView.pullTableIsRefreshing = NO;
+                
+                if (usedArray.count == 0) {
+                    
+                    [self myCouponDataImg:usedTableView];
+                    usedTableView.bounces = YES;
+                }else {
+                
+                    UIView * img = (UIView *)[self.view viewWithTag:10086];
+                    
+                    [img removeFromSuperview];
+                }
+                usedTableView.pullTableIsRefreshing = NO;
+
+            }else{
+                usedPage++;
+                NSArray *array = [result valueForKey:@"couponcodes"];
+                [usedArray addObjectsFromArray:array];
+                [usedTableView reloadData];
+                
+                usedTableView.pullTableIsLoadingMore = NO;
+            }
+        }else{
+            
+//            [ProgressHUD show:[result objectForKey:@"msg"]];
+            if (usedArray.count == 0) {
+                
+                [self myCouponDataImg:usedTableView];
+            }
+            usedTableView.pullTableIsLoadingMore = NO;
+        }
+    } fail:^{
+        if (isloading) {
+
+            [self endLoad];
+        }
+    }];
+}
+
+// 已过期
+-(void)GetMyCouponIsLoading:(BOOL )isloading withoverdatePage:(NSInteger)p andStatus:(NSString *)st{
+    if (isloading) {
+        [self startLoad];
+    }
+    
+    NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
+    
+    [parameters setObject:[NSString stringWithFormat:@"%zd", p] forKey:@"page"];
+    [parameters setObject:[NSString stringWithFormat:@"%@", st] forKey:@"status"];
+    
+    [AFNetworkTool httpRequestWithUrl:URL_MY_COUPON params:parameters success:^(NSData *data) {
+        if (isloading) {
+            [self endLoad];
+        }
+        NSError *error;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        
+        
+        if ([[result objectForKey:@"error"] integerValue] == 0) {
+            if (p == 1) {
+                [overdateArray removeAllObjects];
+                overdatePage = 2;
+                NSArray *array = [result valueForKey:@"couponcodes"];
+                
+                [overdateArray addObjectsFromArray:array];
+                [overdateTableView reloadData];
+                
+                overdateTableView.pullTableIsRefreshing = NO;
+            }else{
+                overdatePage++;
+                NSArray *array = [result valueForKey:@"couponcodes"];
+                [overdateArray addObjectsFromArray:array];
+                [overdateTableView reloadData];
+                
+                overdateTableView.pullTableIsLoadingMore = NO;
+            }
+        }else{
+//            [ProgressHUD show:[result objectForKey:@"msg"]];
+            if (overdateArray.count == 0) {
+                
+                [self myCouponDataImg:overdateTableView];
+            }
+            overdateTableView.pullTableIsLoadingMore = NO;
+        }
+    } fail:^{
+        if (isloading) {
+            [self endLoad];
+        }
+    }];
+}
+
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+
+#pragma mark - UITableViewDelegate
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSDictionary * sedDic = [[NSDictionary alloc]init];
+
+    if (tableView == unusedTableView) {
+        sedDic = [unusedArray objectAtIndex:indexPath.row - 1];
+    }
+    else if (tableView == usedTableView)
+    {
+        sedDic = [usedArray objectAtIndex:indexPath.row - 1];
+    }
+    else{
+        sedDic = [overdateArray objectAtIndex:indexPath.row - 1];
+    }
+    
+    NSString * codeidStr = [sedDic objectForKey:@"codeid"];
+    selectNum = indexPath.row;
+    codeIdString = codeidStr;
+    
+    NSString * url = [URL_MY_COUPONDETAIL stringByAppendingString:[NSString stringWithFormat:@"/?codeid=%@&api_token=%@&api_session_id=%@", codeidStr,API_TOKEN_NUM, [ghunterRequester getApi_session_id]]];
+    url = [url stringByAddingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
+    ghunterWebViewController *webView = [[ghunterWebViewController alloc] init];
+    webView.webTitle = @"优惠券详情";
+    
+    if (tableView == unusedTableView) {
+        
+        webView.urlPassed = url;
+        [self.navigationController pushViewController:webView animated:YES];
+        
+    }else if (tableView == usedTableView) {
+        
+        webView.urlPassed = url;
+        [self.navigationController pushViewController:webView animated:YES];
+
+    }else if (tableView == overdateTableView) {
+        
+        webView.urlPassed = url;
+        [self.navigationController pushViewController:webView animated:YES];
+    }
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    
+    if(tableView == unusedTableView){
+        NSInteger count = [unusedArray count];
+        if(count == 0) {
+            return 0;
+        }
+        else return count + 1;
+    }else if(tableView == usedTableView){
+        NSInteger count = [usedArray count];
+        if(count == 0) {
+            return 0;
+        }
+        else return count + 1;
+    }else if(tableView == overdateTableView){
+        NSInteger count = [overdateArray count];
+        if(count == 0) {
+            return 0;
+        }
+        else return count + 1;
+    }
+    
+    return 0;
+}
+
+
+#pragma mark - UITableviewDatasource
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [self tableView:tableView cellForRowAtIndexPath:indexPath];
+    return cell.frame.size.height;
+    
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    
+    static NSString *CellIdentifier = @"CellIdentifier";
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (!cell) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+    }
+    else {
+        while ([cell.contentView.subviews lastObject]) {
+            [[cell.contentView.subviews lastObject] removeFromSuperview];
+        }
+    }
+    if(tableView == unusedTableView){
+        if(indexPath.row == 0){
+            NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"descriptionView" owner:self options:nil];
+            cell = [nibs objectAtIndex:0];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell.backgroundColor = [UIColor clearColor];
+            CGRect cellFrame = cell.frame;
+            cellFrame.size.height = 0;
+            cell.frame = cellFrame;
+        } else {
+            NSDictionary * unusedDic = [unusedArray objectAtIndex:indexPath.row - 1];
+            
+            NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"discount" owner:self options:nil];
+            cell = [nibs objectAtIndex:0];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            CGSize width = CGSizeMake(self.view.frame.size.width,cell.frame.size.height);
+            CGRect  cellframe = cell.frame;
+            cellframe.size.width = width.width;
+            cell.frame = cellframe;
+            // 标题
+            UILabel * titleLb = (UILabel *)[cell viewWithTag:10];
+            titleLb.text = [unusedDic objectForKey:@"title"];
+        
+            // 时间
+            UILabel * endTimeLb = (UILabel *)[cell viewWithTag:11];
+            endTimeLb.text = [NSString stringWithFormat:@"有效期至: %@", [unusedDic objectForKey:@"endtime"]];
+            
+            // 券码
+            UILabel * codeLb = (UILabel *)[cell viewWithTag:12];
+            codeLb.text = [unusedDic objectForKey:@"code"];
+            codeLb.font = [UIFont systemFontOfSize:13];
+            codeLb.textColor = [UIColor redColor];
+            
+            // 背景图和二维码
+            UIImageView * backImgV = (UIImageView *)[cell viewWithTag:13];
+            backImgV.image = [UIImage imageNamed:@"未使用"];
+            
+            UIImageView * codeImgV = (UIImageView *)[cell viewWithTag:14];
+            codeImgV.image = [UIImage imageNamed:@""];
+        }
+        
+        return cell;
+    }else if(tableView == usedTableView){
+        if(indexPath.row == 0){
+            NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"descriptionView" owner:self options:nil];
+            cell = [nibs objectAtIndex:0];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell.backgroundColor = [UIColor clearColor];
+            CGRect cellFrame = cell.frame;
+            cellFrame.size.height = 0;
+            cell.frame = cellFrame;
+        } else {
+            NSDictionary * unusedDic = [usedArray objectAtIndex:indexPath.row - 1];
+            
+            NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"discount" owner:self options:nil];
+            cell = [nibs objectAtIndex:0];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            CGSize width = CGSizeMake(self.view.frame.size.width,cell.frame.size.height);
+            CGRect  cellframe = cell.frame;
+            cellframe.size.width = width.width;
+            cell.frame = cellframe;
+            // 标题
+            UILabel * titleLb = (UILabel *)[cell viewWithTag:10];
+            titleLb.text = [unusedDic objectForKey:@"title"];
+            titleLb.textColor = [UIColor grayColor];
+            
+            // 时间
+            UILabel * endTimeLb = (UILabel *)[cell viewWithTag:11];
+            endTimeLb.text = [NSString stringWithFormat:@"有效期至: %@", [unusedDic objectForKey:@"endtime"]];
+            
+            // 券码
+            UILabel * codeLb = (UILabel *)[cell viewWithTag:12];
+            codeLb.text = [unusedDic objectForKey:@"code"];
+            codeLb.font = [UIFont systemFontOfSize:13];
+            codeLb.textColor = [UIColor grayColor];
+            
+            // 背景图和二维码
+            UIImageView * backImgV = (UIImageView *)[cell viewWithTag:13];
+            backImgV.image = [UIImage imageNamed:@"已使用"];
+            
+            UIImageView * codeImgV = (UIImageView *)[cell viewWithTag:14];
+            codeImgV.image = [UIImage imageNamed:@""];
+        }
+        
+        return cell;
+    }else if(tableView == overdateTableView){
+        if(indexPath.row == 0){
+            NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"descriptionView" owner:self options:nil];
+            cell = [nibs objectAtIndex:0];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            cell.backgroundColor = [UIColor clearColor];
+            CGRect cellFrame = cell.frame;
+            cellFrame.size.height = 0;
+            cell.frame = cellFrame;
+        } else {
+            NSDictionary * unusedDic = [overdateArray objectAtIndex:indexPath.row - 1];
+            
+            NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"discount" owner:self options:nil];
+            cell = [nibs objectAtIndex:0];
+            cell.selectionStyle = UITableViewCellSelectionStyleNone;
+            CGSize width = CGSizeMake(self.view.frame.size.width,cell.frame.size.height);
+            CGRect  cellframe = cell.frame;
+            cellframe.size.width = width.width;
+            cell.frame = cellframe;
+            // 标题
+            UILabel * titleLb = (UILabel *)[cell viewWithTag:10];
+            titleLb.text = [unusedDic objectForKey:@"title"];
+            titleLb.textColor = [UIColor grayColor];
+            
+            // 时间
+            UILabel * endTimeLb = (UILabel *)[cell viewWithTag:11];
+            endTimeLb.text = [NSString stringWithFormat:@"有效期至: %@", [unusedDic objectForKey:@"endtime"]];
+            
+            // 券码
+            UILabel * codeLb = (UILabel *)[cell viewWithTag:12];
+            codeLb.text = [unusedDic objectForKey:@"code"];
+            codeLb.font = [UIFont systemFontOfSize:13];
+            codeLb.textColor = [UIColor grayColor];
+            
+            // 背景图和二维码
+            UIImageView * backImgV = (UIImageView *)[cell viewWithTag:13];
+            backImgV.image = [UIImage imageNamed:@"作废"];
+            
+            UIImageView * codeImgV = (UIImageView *)[cell viewWithTag:14];
+            codeImgV.image = [UIImage imageNamed:@""];
+        }
+        
+        return cell;
+    }
+    
+    return cell;
+}
+
+
+- (void)startLoad{
+    self.loadingView = [[ghunterLoadingView alloc] initWithSuperView:self.view withGif:@"loading2" withIndicator:@"正在加载..."];
+    [self.loadingView startAnimition];
+}
+
+- (void)endLoad{
+    [self.loadingView inValidate];
+    self.loadingView = nil;
+}
+
+
+#pragma mark --- btn按钮点击
+- (void) myTaskBtnClick:(UIButton *) btn {
+    
+    NSInteger pages = btn.tag - 1001;
+    
+    NSTimeInterval animationDuration = 0.20f;
+    [UIView beginAnimations:@"ResizeForKeyboard" context:nil];
+    [UIView setAnimationDuration:animationDuration];
+    [dataScroll setContentOffset:CGPointMake(mainScreenWidth * pages, 0)];
+    
+    [UIView commitAnimations];
+}
+
+
+#pragma mark --- 监听滚动
+- (void)scrollViewDidScroll:(UIScrollView *)sender
+{
+    static int pages =0;
+    
+    CGFloat pageWidth = dataScroll.frame.size.width;
+    if (pageWidth*(pages-1)<dataScroll.contentOffset.x &&(dataScroll.contentOffset.x - pages * pageWidth)<0) {
+         pages = floor(dataScroll.contentOffset.x / pageWidth)+1;
+
+    }else{
+        pages = floor(dataScroll.contentOffset.x / pageWidth);
+    }
+    UIButton * btn = (UIButton *)[self.view viewWithTag:1001 + pages];
+    if (btn != notDidSelBtn) {
+        
+        [notDidSelBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [btn setTitleColor:RGBCOLOR(234, 85, 20) forState:UIControlStateNormal];
+        
+        notDidSelBtn = btn;
+    }
+    
+    if (sender == dataScroll) {
+        
+        CGRect frame = _buttomLineView.frame;
+        frame.size.width = _myTaskBtn.frame.size.width;
+        frame.origin.x = sender.contentOffset.x / 3;
+        _buttomLineView.frame = frame;
+    }
+}
+
+- ( void )scrollViewDidEndDecelerating:( UIScrollView *)scrollView {
+    
+    int pagesNum = scrollView.contentOffset.x / mainScreenWidth;
+    if (pagesNum == 0) {
+        
+        [self GetMyCouponIsLoading:NO withunusedPage:unusedPage andStatus:@"unused"];
+//        if (unusedArray.count == 0) {
+//            
+//            [self myCouponDataImg:unusedTableView];
+//        }
+    }else if (pagesNum == 1) {
+        
+        [self GetMyCouponIsLoading:NO withusedPage:usedPage andStatus:@"used"];
+//        if (usedArray.count == 0) {
+//            
+//            [self myCouponDataImg:usedTableView];
+//        }
+        
+    }else if (pagesNum == 2){
+        
+        [self GetMyCouponIsLoading:NO withoverdatePage:overdatePage andStatus:@"overdate"];
+//        if (overdateArray.count == 0) {
+//            
+//            [self myCouponDataImg:overdateTableView];
+//        }
+    }
+}
+
+#pragma mark - PullTableViewDelegate
+
+- (void)pullTableViewDidTriggerRefresh:(PullTableView *)pullTableView
+{
+    [self performSelector:@selector(refreshTable) withObject:nil afterDelay:0.1f];
+}
+
+- (void)pullTableViewDidTriggerLoadMore:(PullTableView *)pullTableView
+{
+    [self performSelector:@selector(loadMoreDataToTable) withObject:nil afterDelay:0.1f];
+}
+
+#pragma mark --- refreshAndLoad
+- (void)refreshTable
+{
+    if (dataScroll.contentOffset.x == 0) {
+        
+        unusedPage = 1;
+        [unusedArray removeAllObjects];
+        [self GetMyCouponIsLoading:NO withunusedPage:unusedPage andStatus:@"unused"];
+        unusedTableView.pullTableIsRefreshing = NO;
+    }else if (dataScroll.contentOffset.x == mainScreenWidth) {
+        
+        usedPage = 1;
+        [usedArray removeAllObjects];
+        [self GetMyCouponIsLoading:NO withusedPage:usedPage andStatus:@"used"];
+        usedTableView.pullTableIsRefreshing = NO;
+    }else if(dataScroll.contentOffset.x == mainScreenWidth * 2) {
+        
+        overdatePage = 1;
+        [overdateArray removeAllObjects];
+        [self GetMyCouponIsLoading:NO withoverdatePage:overdatePage andStatus:@"overdate"];
+        overdateTableView.pullTableIsRefreshing = NO;
+    }
+    
+
+}
+
+- (void)loadMoreDataToTable
+{
+    if (dataScroll.contentOffset.x == 0) {
+        
+        [self GetMyCouponIsLoading:NO withunusedPage:unusedPage andStatus:@"unused"];
+        
+        if (unusedArray.count != 0) {
+            
+            UIImageView * imgV = (UIImageView *)[unusedTableView viewWithTag:10086];
+            [imgV removeFromSuperview];
+        }
+        
+    }else if (dataScroll.contentOffset.x == mainScreenWidth) {
+        
+        [self GetMyCouponIsLoading:NO withusedPage:usedPage andStatus:@"used"];
+        UIImageView * imgV = (UIImageView *)[usedTableView viewWithTag:10086];
+        [imgV removeFromSuperview];
+
+    }else if(dataScroll.contentOffset.x == mainScreenWidth * 2) {
+        
+        [self GetMyCouponIsLoading:NO withoverdatePage:overdatePage andStatus:@"overdate"];
+        UIImageView * imgV = (UIImageView *)[overdateTableView viewWithTag:10086];
+        [imgV removeFromSuperview];
+    }
+}
+
+
+#pragma mark --- 添加没有数据的动画
+- (void) myCouponDataImg:(UITableView *) table {
+    
+    UIImageView * imgV = [[UIImageView alloc] initWithFrame:CGRectMake(mainScreenWidth / 3 - 70, mainScreenheight / 2 - 150, 260, 150)];
+    imgV.tag = 10086;
+    UIImageView * leftImgV = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 130, 150)];
+    
+    UIImageView * rightImgV = [[UIImageView alloc] initWithFrame:CGRectMake(130, 0, 130, 150)];
+    
+    UILabel * dataLb = [[UILabel alloc] initWithFrame:CGRectMake(25,40, 70, 30)];
+    dataLb.text = @"没有更多了";
+    dataLb.textColor = [UIColor whiteColor];
+    dataLb.font = [UIFont systemFontOfSize:13];
+    dataLb.textAlignment = NSTextAlignmentCenter;
+    
+    leftImgV.image = [UIImage imageNamed:@"emptyview_image"];
+    rightImgV.image = [UIImage imageNamed:@"emptyview_text"];
+    [rightImgV addSubview:dataLb];
+    
+    [imgV addSubview:leftImgV];
+    [imgV addSubview:rightImgV];
+    [table addSubview:imgV];
+}
+
+
+- (void) judgeCodeDetails {
+    
+    
+//    NSString * url = [NSString stringWithFormat:@"%@?codeid=%@", URL_MY_COUPONDETAIL, codeIdString];
+    
+    NSMutableDictionary *parameters = [[NSMutableDictionary alloc] init];
+    
+    [parameters setObject:[NSString stringWithFormat:@"%@", codeIdString] forKey:@"codeid"];
+    
+    NSLog(@"%@", parameters);
+    
+    [AFNetworkTool httpRequestWithUrl:URL_MY_CODEIDDETAIL params:parameters success:^(NSData *data) {
+        
+        NSError *error;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        
+        NSLog(@"result ========= %@", result);
+        
+        if ([[result objectForKey:@"error"] integerValue] == 0) {
+            
+            NSArray *array = [result valueForKey:@"couponcodes"];
+        }
+    } fail:^{
+//        if (isloading) {
+//            [self endLoad];
+//        }
+    }];
+}
+
+
+
+
+- (IBAction)back:(id)sender {
+    
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+@end

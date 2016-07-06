@@ -1,0 +1,391 @@
+//
+//  AFNetworkTool.m
+//  AFNetText
+//
+//  Created by wxxu on 15/1/27.
+//  Copyright (c) 2015年 wxxu. All rights reserved.
+//
+
+#import "AFNetworkTool.h"
+#import "AFHTTPRequestOperation.h"
+#import "AFJSONRequestOperation.h"
+#import "AFImageRequestOperation.h"
+#import "AFXMLRequestOperation.h"
+#import "AFPropertyListRequestOperation.h"
+#import "NSURLRequest+Url.h"
+#import "sys/utsname.h"
+
+#import "Header.h"
+#import "ghunterRequester.h"
+
+@implementation AFNetworkTool
+
+// 只调用一次初始化类对象
++ (AFHTTPClient *)sharedClient{
+    static AFHTTPClient *_sharedClient = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        _sharedClient = [[AFHTTPClient alloc] initWithBaseURL:[NSURL URLWithString:@""]];
+    });
+    return _sharedClient;
+}
+
+
+/**
+ 第一种，利用AFJSONRequestOperation
+ param:url          请求地址
+ param:params       请求参数
+ param:success      请求成返回json
+ param:fail         请求失败
+ */
++ (void)jsonRequestWithUrl:(NSString *)url params:(NSDictionary *)params success:(void (^)(id json))success fail:(void (^)())fail
+{
+    
+    // 创建一个请求对象
+    NSURLRequest *request = [NSURLRequest requestWithPath:url params:params];
+    
+    AFJSONRequestOperation *op = [AFJSONRequestOperation JSONRequestOperationWithRequest:request success:^(NSURLRequest *request, NSHTTPURLResponse *response, id JSON) {
+        
+        if (success) {
+            success(JSON);
+        }
+        
+    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id JSON) {
+        NSLog(@"%@",error);
+        if (fail) {
+            fail();
+        }
+    }];
+    
+    [op start];
+}
+
++ (void)jsonRequestWithUrl:(NSString *)url success:(void (^)(id))success fail:(void (^)())fail
+{
+    return [self jsonRequestWithUrl:url params:nil success:success fail:fail];
+}
+
+/**
+ 第二种方法，利用AFHTTPRequestOperation
+ param:url          请求地址
+ param:params       请求参数
+ param:success      请求成功返回json
+ param:fail         请求失败
+ */
++ (void)httpRequestWithUrl:(NSString *)url params:(NSMutableDictionary *)params success:(void (^)(NSData *data))success fail:(void (^)())fail
+{
+    if (params == nil) {
+        params = [[NSMutableDictionary alloc] init];
+    }
+    [params setObject:API_TOKEN_NUM forKey:API_TOKEN];
+    if (imgondar_islogin) {
+        [params setObject:[ghunterRequester getApi_session_id] forKey:API_SESSION_ID];
+    }
+    [params setObject:VERSION_VALUE forKey:VERSION_KEY];
+    NSURLRequest *request = [NSURLRequest requestWithPath:url params:params];
+    
+    NSMutableURLRequest *mutableRequest = [request mutableCopy];
+    // NSURLConnection 默认支持GZIP压缩，通过设置Accept-Encoding = gzip 来开启客户端请求压缩数据
+    [mutableRequest addValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
+    request = [mutableRequest copy];
+    
+    AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc]initWithRequest:request];
+    [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        NSString *html = operation.responseString;
+        NSData* data=[html dataUsingEncoding:NSUTF8StringEncoding];
+        if (success) {
+            success(data);
+        }
+    }failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"error == %@",error);
+        if (fail) {
+            fail();
+        }
+    }];
+    NSOperationQueue *queue = [[NSOperationQueue alloc] init];
+    [queue addOperation:operation];
+}
+
++ (void)httpRequestWithUrl:(NSString *)url success:(void (^)(NSData *data))success fail:(void (^)())fail
+{
+    return [self httpRequestWithUrl:url params:nil success:success fail:fail];
+}
+
+/**
+ 通过URL获取图片
+ param:url          请求地址
+ param:success      请求成返回json
+ param:fail         请求失败
+ */
++ (void)imageRequestWithUrl:(NSString *)url success:(void (^)(UIImage *image))success fail:(void (^)())fail
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+    AFImageRequestOperation *operation = [AFImageRequestOperation imageRequestOperationWithRequest:request imageProcessingBlock:nil success:^(NSURLRequest *request, NSHTTPURLResponse*response, UIImage *image) {
+        if (success) {
+            success(image);
+        }
+    } failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error) {
+        NSLog(@"%@",error);
+        if (fail) {
+            fail();
+        }
+
+    }];
+
+    [operation start];
+}
+
+/**
+ URL获取plist文件
+ param:url          请求地址
+ param:params       请求参数
+ param:success      请求成返回json
+ param:fail         请求失败
+ */
++ (void)plistRequestWithUrl:(NSString *)url params:(NSDictionary *)params success:(void (^)(NSDictionary *plist))success fail:(void (^)())fail
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+    [AFPropertyListRequestOperation addAcceptableContentTypes:[NSSet setWithObject:@"text/plain"]];
+    AFPropertyListRequestOperation *operation = [AFPropertyListRequestOperation propertyListRequestOperationWithRequest:request success:^(NSURLRequest *request,NSHTTPURLResponse *response, id propertyList) {
+        if (success) {
+            success(propertyList);
+        }
+    }failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, id propertyList) {
+        NSLog(@"%@",error);
+        if (fail) {
+            fail();
+        }
+
+    }];
+    
+    [operation start];
+}
+
++ (void)plistRequestWithUrl:(NSString *)url  success:(void (^)(NSDictionary *plist))success fail:(void (^)())fail
+{
+    [self plistRequestWithUrl:url params:nil success:success fail:fail];
+}
+
+/**
+ URL获取XML数据
+ param:url          请求地址
+ param:params       请求参数
+ param:success      请求成返回json
+ param:fail         请求失败
+ */
++ (void)xmlRequestWithUrl:(NSString *)url params:(NSDictionary *)params success:(void (^)(NSXMLParser *xmlParser))success fail:(void (^)())fail
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:url]];
+    AFXMLRequestOperation *operation =
+    [AFXMLRequestOperation XMLParserRequestOperationWithRequest:request success:^(NSURLRequest*request, NSHTTPURLResponse *response, NSXMLParser *XMLParser) {
+        if (success) {
+            success(XMLParser);
+        }
+    }failure:^(NSURLRequest *request, NSHTTPURLResponse *response, NSError *error, NSXMLParser*XMLParser) {
+        NSLog(@"%@",error);
+        if (fail) {
+            fail();
+        }
+    }];
+    [operation start];
+}
+
++ (void)xmlRequestWithUrl:(NSString *)url success:(void (^)(NSXMLParser *xmlParser))success fail:(void (^)())fail
+{
+    [self xmlRequestWithUrl:url params:nil success:success fail:fail];
+}
+
+/**
+ URL上传多张（单张）图片和其他附加参数
+ param:apiUrl          请求地址
+ param:parameters       请求参数
+ param:imageArr     图片数组，NSMutableArray里面存放UIImage对象
+ prama:imgKey       图片上传的key
+ param:success      请求成返回json
+ param:fail         请求失败
+ */
++ (void)uploadImage:(NSMutableArray *)imageArr forKey:(NSString *)imgKey andParameters:(NSMutableDictionary *)parameters toApiUrl:(NSString *)apiUrl success:(void (^)(NSData *))success fail:(void (^)())fail{
+    /*
+     5      此段代码如果需要修改，可以调整的位置
+     6
+     7      1. 把upload.php改成网站开发人员告知的地址
+     8      2. 把file改成网站开发人员告知的字段名
+     9      */
+    // 1. httpClient->url
+    
+    // 2. 上传请求POST
+    // 3. 这里的parameters参数可以上传其他非文件类参数，如dic
+    
+    NSURLRequest *request = [[self sharedClient] multipartFormRequestWithMethod:@"POST" path:apiUrl parameters:parameters constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        // 在此位置生成一个要上传的数据体
+        // form对应的是html文件中的表单
+        // 0.5 用于压缩图片质量
+        // NSData *data = UIImageJPEGRepresentation(photoImg, 0.5);
+        for (NSUInteger i = 0; i < [imageArr count]; i++) {
+            NSData* imageData = UIImageJPEGRepresentation([imageArr objectAtIndex:i], 0.5);
+            [formData appendPartWithFileData:imageData name:imgKey fileName:@"photo%zd.jpg" mimeType:@"image/jpg"];
+        }
+        // 在网络开发中，上传文件时，是文件不允许被覆盖，文件重名
+        // 要解决此问题
+        // 可以在上传时使用当前的系统事件作为文件名
+        // NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        // 设置时间格式
+        // formatter.dateFormat = @"yyyyMMddHHmmss";
+        // NSString *str = [formatter stringFromDate:[NSDate date]];
+        // NSString *fileName = [NSString stringWithFormat:@"%@.png", str];
+        /*
+         32          此方法参数
+         33          1. 要上传的[二进制数据]
+         34          2. 对应网站上[upload.php中]处理文件的[字段"file"]
+         35          3. 要保存在服务器上的[文件名]
+         36          4. 上传文件的[mimeType]
+         37          */
+        // [formData appendPartWithFileData:data name:@"images[]" fileName:fileName mimeType:@"image/png"];
+    }];
+    
+    // 3. operation包装的urlconnetion
+    AFHTTPRequestOperation *op = [[AFHTTPRequestOperation alloc] initWithRequest:request];
+    [op setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
+        success(responseObject);
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        NSLog(@"error =  %@",error);
+        if (fail) {
+            fail();
+        }
+    }];
+    //执行
+    [[self sharedClient].operationQueue addOperation:op];
+}
+
+// 普通POST方法
++(void)httpPostWithUrl:(NSString *)url andParameters:(NSMutableDictionary *)parameters success:(void (^)(NSData *))success fail:(void (^)())fail{
+    
+    [parameters setObject:API_TOKEN_NUM forKey:API_TOKEN];
+    if (imgondar_islogin) {
+        [parameters setObject:[ghunterRequester getApi_session_id] forKey:API_SESSION_ID];
+    }
+    [parameters setObject:VERSION_VALUE forKey:VERSION_KEY];
+    AFHTTPClient *aClient = [AFHTTPClient clientWithBaseURL:[NSURL URLWithString:url]];
+    
+    //设置接受的数据类型为text
+    [aClient setDefaultHeader:@"Accept" value:@"text/html"];
+    // NSURLConnection 默认支持GZIP压缩，通过设置Accept-Encoding = gzip 来开启客户端请求压缩数据
+    [aClient setDefaultHeader:@"Accept-Encoding" value:@"gzip"];
+    //设置提交的数据编码类型为form格式
+    [aClient setParameterEncoding:AFFormURLParameterEncoding];
+    [aClient postPath:nil parameters:parameters success:^(AFHTTPRequestOperation*operation, id responseObject)
+     {
+         success(responseObject);
+     }
+     failure:^(AFHTTPRequestOperation *operation,NSError *error)
+     {
+         if (fail) {
+             fail();
+         }
+     }];
+}
+
+
++ (NSString*)getDeviceString
+{
+    // 需要#import "sys/utsname.h"
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    NSString *deviceString = [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
+    
+    if ([deviceString isEqualToString:@"iPhone1,1"])    return @"iPhone 1G";
+    if ([deviceString isEqualToString:@"iPhone1,2"])    return @"iPhone 3G";
+    if ([deviceString isEqualToString:@"iPhone2,1"])    return @"iPhone 3GS";
+    if ([deviceString isEqualToString:@"iPhone3,1"])    return @"iPhone 4";
+    if ([deviceString isEqualToString:@"iPhone4,1"])    return @"iPhone 4S";
+    if ([deviceString isEqualToString:@"iPhone5,2"])    return @"iPhone 5";
+    if ([deviceString isEqualToString:@"iPhone5,3"])    return @"iPhone 5C";
+    if ([deviceString isEqualToString:@"iPhone3,2"])    return @"Verizon iPhone 4";
+    if ([deviceString isEqualToString:@"iPod1,1"])      return @"iPod Touch 1G";
+    if ([deviceString isEqualToString:@"iPod2,1"])      return @"iPod Touch 2G";
+    if ([deviceString isEqualToString:@"iPod3,1"])      return @"iPod Touch 3G";
+    if ([deviceString isEqualToString:@"iPod4,1"])      return @"iPod Touch 4G";
+    if ([deviceString isEqualToString:@"iPad1,1"])      return @"iPad";
+    if ([deviceString isEqualToString:@"iPad2,1"])      return @"iPad 2 (WiFi)";
+    if ([deviceString isEqualToString:@"iPad2,2"])      return @"iPad 2 (GSM)";
+    if ([deviceString isEqualToString:@"iPad2,3"])      return @"iPad 2 (CDMA)";
+    if ([deviceString isEqualToString:@"i386"])         return @"Simulator";
+    if ([deviceString isEqualToString:@"x86_64"])       return @"Simulator";
+    NSLog(@"NOTE: Unknown device type: %@", deviceString);
+    return deviceString;
+}
+
+// 获取猎人ID号，ID号也是邀请码，需要用猎人UID来计算
+// direction = 0 从uid得到邀请码
+// direction = 1 从邀请码得到uid
++(int)getHunterID:(int)codeInt :(int)direction{
+    if ( codeInt == 0 ) {
+        return 0;
+    }
+    NSString *code = [NSString stringWithFormat:@"%d", codeInt];
+    NSString *newCode = @"";
+    if (direction == 1) {
+        // 逆向加密获取用户UID
+        code = [NSString stringWithFormat:@"%d", ((codeInt - 607) / 2)];
+        newCode = [code substringToIndex:1];
+    }
+    for (int i = (int)[code length] - 1; i > 0; i--) {
+        newCode = [newCode stringByAppendingString:[code substringWithRange:NSMakeRange(i, 1)]];
+    }
+    if (direction == 0) {
+        // 正向获取邀请码
+        newCode = [[code substringToIndex:1] stringByAppendingString:newCode];
+        newCode = [NSString stringWithFormat:@"%d", ([newCode intValue]*2 + 607)];
+    }
+    return [newCode intValue];
+}
+
+// 分享统计
+// oid 分享对象OID
+// type 分享类型
+// data 分享数据
+// platform 分享平台： android+weixin
++(void)share_record:(NSString *)oid :(NSString *)type :(NSString *)data :(NSString *)platform{
+    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+    [params setObject:oid forKey:@"oid"];
+    [params setObject:type forKey:@"type"];
+    [params setObject:data forKey:@"data"];
+    [params setObject:platform forKey:@"platform"];
+    
+    [self httpPostWithUrl:URL_SHARE_RECORD andParameters:params success:^(NSData *data) {
+        NSError *error;
+        NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        if ([[result objectForKey:@"error"]integerValue] == 0) {
+            [ProgressHUD show:[result objectForKey:@"msg"]];
+        }else{
+            [ProgressHUD show:[result objectForKey:@"msg"]];
+        }
+    } fail:^{
+        [ProgressHUD show:HTTPREQUEST_ERROR];
+    }];
+}
+
+
+
+// 获取职业标签图片
++(NSString *)getIndustryIcon:(NSString *)string {
+    
+    if (string.length == 0) {
+        return @"";
+    }
+    
+    NSString * tmpString = [string substringWithRange:NSMakeRange(0, 1)];
+    if ([tmpString isEqualToString:@"I"]) {
+        return @"信";
+    }else if ([tmpString isEqualToString:@"无"]){
+        return @"nill";
+    }else if ([tmpString isEqualToString:@"艺"]){
+        return @"娱";
+    }else {
+        return tmpString;
+    }
+}
+
+
+
+@end
